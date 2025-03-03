@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Details - Tourism Booking Platform</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-globe-americas"></i> Tourism Explorer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="hotels.html">Hotels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="destinations.html">Destinations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="deals.html">Special Deals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hotel Details -->
+    <div class="container py-4">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                <li class="breadcrumb-item"><a href="hotels.html">Hotels</a></li>
+                <li class="breadcrumb-item active" id="hotelName">Loading...</li>
+            </ol>
+        </nav>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+
+        <!-- Error State -->
+        <div id="errorState" class="alert alert-danger d-none" role="alert">
+            An error occurred while loading hotel details.
+        </div>
+
+        <!-- Hotel Content -->
+        <div id="hotelContent" class="d-none">
+            <!-- Hotel Header -->
+            <div class="row mb-4">
+                <div class="col-md-8">
+                    <h1 id="hotelTitle" class="mb-2"></h1>
+                    <div class="d-flex align-items-center mb-2">
+                        <div id="hotelStars" class="me-3"></div>
+                        <span id="hotelLocation" class="text-muted">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </span>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="price-box p-3 bg-light rounded">
+                        <small>Starting from</small>
+                        <h2 class="mb-0" id="hotelPrice"></h2>
+                        <small>per night</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Photo Gallery -->
+            <div class="row mb-4">
+                <div class="col-12">
+                    <div id="hotelGallery" class="carousel slide" data-bs-ride="carousel">
+                        <div class="carousel-inner" id="galleryInner">
+                            <!-- Gallery items will be inserted here -->
+                        </div>
+                        <button class="carousel-control-prev" type="button" data-bs-target="#hotelGallery" data-bs-slide="prev">
+                            <span class="carousel-control-prev-icon"></span>
+                        </button>
+                        <button class="carousel-control-next" type="button" data-bs-target="#hotelGallery" data-bs-slide="next">
+                            <span class="carousel-control-next-icon"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="row">
+                <!-- Left Column -->
+                <div class="col-lg-8">
+                    <!-- Description -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3>About the Hotel</h3>
+                            <p id="hotelDescription"></p>
+                        </div>
+                    </div>
+
+                    <!-- Room Types -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3>Available Rooms</h3>
+                            <div id="roomTypesList" class="row g-3">
+                                <!-- Room types will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Amenities -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3>Amenities</h3>
+                            <div id="amenitiesList" class="row g-3">
+                                <!-- Amenities will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Reviews -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h3>Guest Reviews</h3>
+                                <div class="rating-summary">
+                                    <span id="averageRating" class="h4"></span>
+                                    <small class="text-muted">(<span id="reviewCount"></span> reviews)</small>
+                                </div>
+                            </div>
+                            <div id="reviewsList">
+                                <!-- Reviews will be inserted here -->
+                            </div>
+                            <div id="reviewsPagination" class="mt-3">
+                                <!-- Pagination will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div class="col-lg-4">
+                    <!-- Booking Form -->
+                    <div class="card mb-4 sticky-top" style="top: 80px;">
+                        <div class="card-body">
+                            <h3>Book Now</h3>
+                            <form id="bookingForm">
+                                <div class="mb-3">
+                                    <label class="form-label">Check-in</label>
+                                    <input type="date" class="form-control" id="checkIn" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Check-out</label>
+                                    <input type="date" class="form-control" id="checkOut" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Guests</label>
+                                    <select class="form-select" id="guestCount" required>
+                                        <option value="1">1 Guest</option>
+                                        <option value="2">2 Guests</option>
+                                        <option value="3">3 Guests</option>
+                                        <option value="4">4 Guests</option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Room Type</label>
+                                    <select class="form-select" id="roomType" required>
+                                        <!-- Room types will be inserted here -->
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary w-100">Book Now</button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Map -->
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h3>Location</h3>
+                            <div id="hotelMap" style="height: 300px;">
+                                <!-- Map will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Similar Hotels -->
+                    <div class="card">
+                        <div class="card-body">
+                            <h3>Similar Hotels</h3>
+                            <div id="similarHotelsList">
+                                <!-- Similar hotels will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Discover the world with our premium travel services and exclusive hotel deals.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="#" class="text-white">About</a></li>
+                        <li><a href="#" class="text-white">Terms & Conditions</a></li>
+                        <li><a href="#" class="text-white">Privacy Policy</a></li>
+                        <li><a href="#" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Newsletter</h5>
+                    <form class="mb-3">
+                        <div class="input-group">
+                            <input type="email" class="form-control" placeholder="Enter your email">
+                            <button class="btn btn-primary" type="submit">Subscribe</button>
+                        </div>
+                    </form>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-2"><i class="fab fa-facebook"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-2"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="scripts/hotel-details.js"></script>
+</body>
+</html> 
