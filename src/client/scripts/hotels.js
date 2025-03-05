@@ -1,207 +1,394 @@
+// DOM Elements
+const hotelSearchForm = document.getElementById('hotelSearchForm');
+const destinationInput = document.getElementById('destinationInput');
+const checkInDate = document.getElementById('checkInDate');
+const checkOutDate = document.getElementById('checkOutDate');
+const guestsSelect = document.getElementById('guestsSelect');
+const priceRangeElement = document.getElementById('priceRange');
+const priceMin = document.getElementById('priceMin');
+const priceMax = document.getElementById('priceMax');
+const sortSelect = document.getElementById('sortSelect');
+const listViewBtn = document.getElementById('listView');
+const mapViewBtn = document.getElementById('mapView');
+const hotelResults = document.getElementById('hotelResults');
+const mapContainer = document.getElementById('mapContainer');
+const loadMoreBtn = document.getElementById('loadMore');
+const totalResults = document.getElementById('totalResults');
+const newsletterForm = document.getElementById('newsletterForm');
+
 // State Management
-let currentState = {
-    view: 'grid',
-    page: 1,
-    sort: 'recommended',
-    filters: {
-        priceRange: { min: null, max: null },
-        stars: [],
-        amenities: []
-    }
+let currentPage = 1;
+let totalPages = 1;
+let currentView = 'list';
+let map = null;
+let markers = [];
+let currentFilters = {
+    priceRange: [0, 1000],
+    starRating: [],
+    amenities: [],
+    propertyType: []
 };
 
-// DOM Elements
-const hotelsList = document.getElementById('hotelsList');
-const filterForm = document.getElementById('filterForm');
-const sortOption = document.getElementById('sortOption');
-const pagination = document.getElementById('pagination');
-
-// Event Listeners
+// Initialize page
 document.addEventListener('DOMContentLoaded', () => {
+    initializeDateInputs();
+    initializePriceRange();
+    initializeEventListeners();
+    initializeFromURL();
     loadHotels();
-    initializeFilters();
 });
 
-filterForm.addEventListener('submit', (e) => {
+// Initialize Date Inputs
+function initializeDateInputs() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todayStr = formatDate(today);
+    const tomorrowStr = formatDate(tomorrow);
+    
+    checkInDate.min = todayStr;
+    checkOutDate.min = tomorrowStr;
+    
+    if (!checkInDate.value) checkInDate.value = todayStr;
+    if (!checkOutDate.value) checkOutDate.value = tomorrowStr;
+
+    checkInDate.addEventListener('change', updateCheckOutMinDate);
+}
+
+// Initialize Price Range Slider
+function initializePriceRange() {
+    noUiSlider.create(priceRangeElement, {
+        start: [0, 1000],
+        connect: true,
+        range: {
+            'min': 0,
+            'max': 1000
+        },
+        format: {
+            to: value => Math.round(value),
+            from: value => Math.round(value)
+        }
+    });
+
+    priceRangeElement.noUiSlider.on('update', (values) => {
+        priceMin.textContent = `$${values[0]}`;
+        priceMax.textContent = `$${values[1]}`;
+        currentFilters.priceRange = values;
+    });
+}
+
+// Initialize Event Listeners
+function initializeEventListeners() {
+    hotelSearchForm.addEventListener('submit', handleSearch);
+    sortSelect.addEventListener('change', handleSort);
+    listViewBtn.addEventListener('click', () => switchView('list'));
+    mapViewBtn.addEventListener('click', () => switchView('map'));
+    loadMoreBtn.addEventListener('click', loadMoreHotels);
+    newsletterForm.addEventListener('submit', handleNewsletterSubscription);
+    
+    // Filter event listeners
+    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+        checkbox.addEventListener('change', handleFilterChange);
+    });
+
+    document.getElementById('applyFilters').addEventListener('click', applyFilters);
+}
+
+// Initialize from URL Parameters
+function initializeFromURL() {
+    const params = new URLSearchParams(window.location.search);
+    
+    if (params.has('destination')) {
+        destinationInput.value = params.get('destination');
+    }
+    if (params.has('checkIn')) {
+        checkInDate.value = params.get('checkIn');
+    }
+    if (params.has('checkOut')) {
+        checkOutDate.value = params.get('checkOut');
+    }
+    if (params.has('guests')) {
+        guestsSelect.value = params.get('guests');
+    }
+}
+
+// Format Date
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// Update Check-out Min Date
+function updateCheckOutMinDate() {
+    const selectedCheckIn = new Date(checkInDate.value);
+    const nextDay = new Date(selectedCheckIn);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    checkOutDate.min = formatDate(nextDay);
+    
+    if (new Date(checkOutDate.value) <= selectedCheckIn) {
+        checkOutDate.value = formatDate(nextDay);
+    }
+}
+
+// Handle Search
+async function handleSearch(e) {
     e.preventDefault();
-    updateFilters();
-    loadHotels();
-});
+    currentPage = 1;
+    await loadHotels();
+    
+    // Update URL with search parameters
+    const searchParams = new URLSearchParams({
+        destination: destinationInput.value,
+        checkIn: checkInDate.value,
+        checkOut: checkOutDate.value,
+        guests: guestsSelect.value
+    });
+    window.history.pushState({}, '', `?${searchParams.toString()}`);
+}
 
-sortOption.addEventListener('change', () => {
-    currentState.sort = sortOption.value;
-    loadHotels();
-});
+// Handle Sort
+async function handleSort() {
+    currentPage = 1;
+    await loadHotels();
+}
+
+// Handle Filter Change
+function handleFilterChange(e) {
+    const { id, checked, value } = e.target;
+    
+    if (id.startsWith('star')) {
+        if (checked) {
+            currentFilters.starRating.push(parseInt(value));
+        } else {
+            currentFilters.starRating = currentFilters.starRating.filter(rating => rating !== parseInt(value));
+        }
+    } else if (['wifi', 'pool', 'parking', 'restaurant', 'gym'].includes(id)) {
+        if (checked) {
+            currentFilters.amenities.push(value);
+        } else {
+            currentFilters.amenities = currentFilters.amenities.filter(amenity => amenity !== value);
+        }
+    } else if (['hotel', 'resort', 'apartment', 'villa'].includes(id)) {
+        if (checked) {
+            currentFilters.propertyType.push(value);
+        } else {
+            currentFilters.propertyType = currentFilters.propertyType.filter(type => type !== value);
+        }
+    }
+}
+
+// Apply Filters
+async function applyFilters() {
+    currentPage = 1;
+    await loadHotels();
+}
+
+// Switch View (List/Map)
+function switchView(view) {
+    currentView = view;
+    
+    if (view === 'list') {
+        listViewBtn.classList.add('active');
+        mapViewBtn.classList.remove('active');
+        hotelResults.classList.remove('d-none');
+        mapContainer.classList.add('d-none');
+    } else {
+        mapViewBtn.classList.add('active');
+        listViewBtn.classList.remove('active');
+        hotelResults.classList.add('d-none');
+        mapContainer.classList.remove('d-none');
+        initializeMap();
+    }
+}
+
+// Initialize Map
+function initializeMap() {
+    if (!map) {
+        map = L.map(mapContainer).setView([0, 0], 2);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
+    updateMapMarkers();
+}
+
+// Update Map Markers
+function updateMapMarkers() {
+    // Clear existing markers
+    markers.forEach(marker => marker.remove());
+    markers = [];
+
+    // Add markers for each hotel
+    const hotels = Array.from(hotelResults.children);
+    hotels.forEach(hotel => {
+        if (hotel.dataset.lat && hotel.dataset.lng) {
+            const marker = L.marker([
+                parseFloat(hotel.dataset.lat),
+                parseFloat(hotel.dataset.lng)
+            ]).addTo(map);
+            
+            marker.bindPopup(createMarkerPopup(hotel));
+            markers.push(marker);
+        }
+    });
+
+    // Fit bounds if there are markers
+    if (markers.length > 0) {
+        const group = L.featureGroup(markers);
+        map.fitBounds(group.getBounds());
+    }
+}
+
+// Create Marker Popup
+function createMarkerPopup(hotel) {
+    return `
+        <div class="map-popup">
+            <img src="${hotel.dataset.image}" alt="${hotel.dataset.name}" class="img-fluid mb-2">
+            <h6>${hotel.dataset.name}</h6>
+            <p class="mb-1">${hotel.dataset.location}</p>
+            <p class="mb-1">From $${hotel.dataset.price}</p>
+            <a href="hotel-details.html?id=${hotel.dataset.id}" class="btn btn-sm btn-primary">
+                View Details
+            </a>
+        </div>
+    `;
+}
 
 // Load Hotels
 async function loadHotels() {
     showLoading();
+    
     try {
-        const queryParams = buildQueryParams();
-        const response = await fetch(`/api/v1/booking/hotels/search?${queryParams}`);
+        const response = await fetch('/api/v1/booking/hotels/search', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                destination: destinationInput.value,
+                checkIn: checkInDate.value,
+                checkOut: checkOutDate.value,
+                guests: parseInt(guestsSelect.value),
+                page: currentPage,
+                sort: sortSelect.value,
+                filters: currentFilters
+            })
+        });
+
         const data = await response.json();
 
         if (data.success) {
-            displayHotels(data.data);
-            updatePagination(data.pagination);
+            if (currentPage === 1) {
+                hotelResults.innerHTML = '';
+            }
+            
+            displayHotels(data.hotels);
+            updateTotalResults(data.total);
+            updateLoadMoreButton(data.currentPage, data.totalPages);
+            
+            if (currentView === 'map') {
+                updateMapMarkers();
+            }
         } else {
-            showError('Failed to load hotels');
+            throw new Error(data.message || 'Failed to load hotels');
         }
     } catch (error) {
-        console.error('Error loading hotels:', error);
-        showError('An error occurred while loading hotels');
+        showError(error.message);
     }
 }
 
-// Build Query Parameters
-function buildQueryParams() {
-    const params = new URLSearchParams();
-    
-    // Add pagination
-    params.append('page', currentState.page);
-    
-    // Add sorting
-    params.append('sort', currentState.sort);
-    
-    // Add price range
-    if (currentState.filters.priceRange.min) {
-        params.append('minPrice', currentState.filters.priceRange.min);
-    }
-    if (currentState.filters.priceRange.max) {
-        params.append('maxPrice', currentState.filters.priceRange.max);
-    }
-    
-    // Add star rating
-    if (currentState.filters.stars.length > 0) {
-        params.append('stars', currentState.filters.stars.join(','));
-    }
-    
-    // Add amenities
-    if (currentState.filters.amenities.length > 0) {
-        params.append('amenities', currentState.filters.amenities.join(','));
-    }
-    
-    return params.toString();
+// Load More Hotels
+async function loadMoreHotels() {
+    currentPage++;
+    await loadHotels();
 }
 
 // Display Hotels
 function displayHotels(hotels) {
-    if (!hotels || hotels.length === 0) {
-        hotelsList.innerHTML = `
-            <div class="col-12">
-                <div class="alert alert-info">
-                    No hotels found matching your criteria.
-                </div>
-            </div>
-        `;
-        return;
-    }
-
-    const viewTemplate = currentState.view === 'grid' ? getGridTemplate : getListTemplate;
-    hotelsList.innerHTML = hotels.map(hotel => viewTemplate(hotel)).join('');
-}
-
-// Grid View Template
-function getGridTemplate(hotel) {
-    return `
-        <div class="col-md-6 col-lg-4 animate-fade-in">
-            <div class="card hotel-card h-100">
-                <img src="${hotel.photo_url || 'images/placeholder.jpg'}" 
+    const hotelCards = hotels.map(hotel => `
+        <div class="col-md-6 col-lg-4 mb-4" 
+             data-id="${hotel.id}"
+             data-lat="${hotel.latitude}"
+             data-lng="${hotel.longitude}"
+             data-name="${hotel.name}"
+             data-location="${hotel.location}"
+             data-price="${hotel.price}"
+             data-image="${hotel.image_url}">
+            <div class="card h-100 hotel-card">
+                <img src="${hotel.image_url}" 
                      class="card-img-top" 
                      alt="${hotel.name}"
-                     onerror="this.src='images/placeholder.jpg'">
+                     style="height: 200px; object-fit: cover;">
                 <div class="card-body">
                     <h5 class="card-title">${hotel.name}</h5>
-                    <div class="mb-2">
-                        ${getStarRating(hotel.rating)}
-                    </div>
-                    <p class="card-text">
-                        <i class="fas fa-map-marker-alt text-primary"></i> ${hotel.location}
+                    <p class="card-text text-muted mb-2">
+                        <i class="fas fa-map-marker-alt"></i> ${hotel.location}
                     </p>
+                    <div class="mb-2">
+                        ${generateStarRating(hotel.rating)}
+                        <small class="text-muted">(${hotel.reviews_count} reviews)</small>
+                    </div>
                     <div class="amenities mb-3">
-                        ${getAmenityIcons(hotel.amenities)}
+                        ${generateAmenitiesIcons(hotel.amenities)}
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <div class="price">
-                            <small>From</small>
+                        <div>
+                            <small class="text-muted">From</small>
                             <br>
-                            <strong>$${hotel.price}</strong> / night
+                            <span class="text-primary fw-bold">$${hotel.price}</span>
+                            <small class="text-muted">per night</small>
                         </div>
-                        <button class="btn btn-primary" onclick="viewHotelDetails('${hotel.id}')">
+                        <a href="hotel-details.html?id=${hotel.id}" class="btn btn-primary">
                             View Details
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
-    `;
-}
+    `).join('');
 
-// List View Template
-function getListTemplate(hotel) {
-    return `
-        <div class="col-12 animate-fade-in">
-            <div class="card hotel-card-list">
-                <div class="row g-0">
-                    <div class="col-md-4">
-                        <img src="${hotel.photo_url || 'images/placeholder.jpg'}" 
-                             class="img-fluid h-100 w-100 object-fit-cover" 
-                             alt="${hotel.name}"
-                             onerror="this.src='images/placeholder.jpg'">
-                    </div>
-                    <div class="col-md-8">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between">
-                                <h5 class="card-title">${hotel.name}</h5>
-                                <div class="price text-end">
-                                    <small>From</small>
-                                    <br>
-                                    <strong>$${hotel.price}</strong> / night
-                                </div>
-                            </div>
-                            <div class="mb-2">
-                                ${getStarRating(hotel.rating)}
-                            </div>
-                            <p class="card-text">
-                                <i class="fas fa-map-marker-alt text-primary"></i> ${hotel.location}
-                            </p>
-                            <div class="amenities mb-3">
-                                ${getAmenityIcons(hotel.amenities)}
-                            </div>
-                            <button class="btn btn-primary" onclick="viewHotelDetails('${hotel.id}')">
-                                View Details
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    `;
-}
-
-// Helper Functions
-function getStarRating(rating) {
-    const stars = [];
-    for (let i = 0; i < 5; i++) {
-        if (i < Math.floor(rating)) {
-            stars.push('<i class="fas fa-star text-warning"></i>');
-        } else if (i === Math.floor(rating) && rating % 1 !== 0) {
-            stars.push('<i class="fas fa-star-half-alt text-warning"></i>');
-        } else {
-            stars.push('<i class="far fa-star text-warning"></i>');
-        }
+    if (currentPage === 1) {
+        hotelResults.innerHTML = hotelCards;
+    } else {
+        hotelResults.insertAdjacentHTML('beforeend', hotelCards);
     }
-    return stars.join('');
 }
 
-function getAmenityIcons(amenities) {
+// Generate Star Rating
+function generateStarRating(rating) {
+    const fullStar = '<i class="fas fa-star text-warning"></i>';
+    const halfStar = '<i class="fas fa-star-half-alt text-warning"></i>';
+    const emptyStar = '<i class="far fa-star text-warning"></i>';
+    
+    let stars = '';
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 !== 0;
+    
+    for (let i = 0; i < fullStars; i++) {
+        stars += fullStar;
+    }
+    
+    if (hasHalfStar) {
+        stars += halfStar;
+    }
+    
+    const emptyStars = 5 - Math.ceil(rating);
+    for (let i = 0; i < emptyStars; i++) {
+        stars += emptyStar;
+    }
+    
+    return stars;
+}
+
+// Generate Amenities Icons
+function generateAmenitiesIcons(amenities) {
     const amenityIcons = {
         wifi: '<i class="fas fa-wifi" title="Free WiFi"></i>',
-        pool: '<i class="fas fa-swimming-pool" title="Pool"></i>',
+        pool: '<i class="fas fa-swimming-pool" title="Swimming Pool"></i>',
         parking: '<i class="fas fa-parking" title="Free Parking"></i>',
         restaurant: '<i class="fas fa-utensils" title="Restaurant"></i>',
-        gym: '<i class="fas fa-dumbbell" title="Gym"></i>',
-        spa: '<i class="fas fa-spa" title="Spa"></i>'
+        gym: '<i class="fas fa-dumbbell" title="Fitness Center"></i>'
     };
 
     return amenities
@@ -209,106 +396,88 @@ function getAmenityIcons(amenities) {
         .join(' ');
 }
 
-// Filter Management
-function initializeFilters() {
-    // Price Range
-    const minPrice = document.getElementById('minPrice');
-    const maxPrice = document.getElementById('maxPrice');
+// Update Total Results
+function updateTotalResults(total) {
+    totalResults.textContent = total;
+}
+
+// Update Load More Button
+function updateLoadMoreButton(currentPage, totalPages) {
+    if (currentPage < totalPages) {
+        loadMoreBtn.classList.remove('d-none');
+    } else {
+        loadMoreBtn.classList.add('d-none');
+    }
+}
+
+// Handle Newsletter Subscription
+async function handleNewsletterSubscription(e) {
+    e.preventDefault();
     
-    minPrice.addEventListener('change', () => {
-        if (minPrice.value && maxPrice.value && Number(minPrice.value) > Number(maxPrice.value)) {
-            maxPrice.value = minPrice.value;
-        }
-    });
+    const emailInput = e.target.querySelector('input[type="email"]');
+    const submitButton = e.target.querySelector('button[type="submit"]');
     
-    maxPrice.addEventListener('change', () => {
-        if (minPrice.value && maxPrice.value && Number(maxPrice.value) < Number(minPrice.value)) {
-            minPrice.value = maxPrice.value;
-        }
-    });
-
-    // Star Rating
-    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-        checkbox.addEventListener('change', () => {
-            updateFilters();
-            loadHotels();
-        });
-    });
-}
-
-function updateFilters() {
-    // Update price range
-    currentState.filters.priceRange = {
-        min: document.getElementById('minPrice').value || null,
-        max: document.getElementById('maxPrice').value || null
-    };
-
-    // Update star rating
-    currentState.filters.stars = Array.from(document.querySelectorAll('input[type="checkbox"][id^="star"]'))
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
-
-    // Update amenities
-    currentState.filters.amenities = Array.from(document.querySelectorAll('input[type="checkbox"]:not([id^="star"])'))
-        .filter(cb => cb.checked)
-        .map(cb => cb.value);
-}
-
-// View Toggle
-function toggleView(view) {
-    currentState.view = view;
-    document.querySelectorAll('.view-options button').forEach(btn => {
-        btn.classList.toggle('active', btn.onclick.toString().includes(view));
-    });
-    loadHotels();
-}
-
-// Pagination
-function updatePagination(paginationData) {
-    if (!paginationData) return;
-
-    const { currentPage, totalPages } = paginationData;
-    const pages = [];
-
-    // Previous button
-    pages.push(`
-        <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Previous</a>
-        </li>
-    `);
-
-    // Page numbers
-    for (let i = 1; i <= totalPages; i++) {
-        if (i === 1 || i === totalPages || (i >= currentPage - 2 && i <= currentPage + 2)) {
-            pages.push(`
-                <li class="page-item ${i === currentPage ? 'active' : ''}">
-                    <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
-                </li>
-            `);
-        } else if (i === currentPage - 3 || i === currentPage + 3) {
-            pages.push('<li class="page-item disabled"><span class="page-link">...</span></li>');
-        }
+    if (!emailInput.value) {
+        showAlert('Please enter your email address.', 'danger');
+        return;
     }
 
-    // Next button
-    pages.push(`
-        <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-            <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Next</a>
-        </li>
-    `);
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subscribing...';
 
-    pagination.innerHTML = pages.join('');
+        const response = await fetch('/api/v1/booking/newsletter/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: emailInput.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showAlert('Thank you for subscribing to our newsletter!', 'success');
+            emailInput.value = '';
+        } else {
+            throw new Error(data.message || 'Failed to subscribe. Please try again.');
+        }
+    } catch (error) {
+        showAlert(error.message, 'danger');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Subscribe';
+    }
 }
 
-function changePage(page) {
-    currentState.page = page;
-    loadHotels();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+// Show Alert Message
+function showAlert(message, type) {
+    const existingAlert = document.querySelector('.alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show`;
+    alert.role = 'alert';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    const targetForm = event.target.closest('form');
+    targetForm.parentElement.insertBefore(alert, targetForm);
+
+    setTimeout(() => {
+        alert.remove();
+    }, 5000);
 }
 
-// UI Helper Functions
+// UI State Management
 function showLoading() {
-    hotelsList.innerHTML = `
+    hotelResults.innerHTML = `
         <div class="col-12 text-center py-5">
             <div class="spinner-border text-primary" role="status">
                 <span class="visually-hidden">Loading...</span>
@@ -318,16 +487,11 @@ function showLoading() {
 }
 
 function showError(message) {
-    hotelsList.innerHTML = `
+    hotelResults.innerHTML = `
         <div class="col-12">
-            <div class="alert alert-danger">
+            <div class="alert alert-danger" role="alert">
                 ${message}
             </div>
         </div>
     `;
-}
-
-// Hotel Details Navigation
-function viewHotelDetails(hotelId) {
-    window.location.href = `hotel-details.html?id=${hotelId}`;
 } 

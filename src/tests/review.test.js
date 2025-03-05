@@ -1,10 +1,7 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server');
-const User = require('../models/User');
-const Hotel = require('../models/Hotel');
-const Review = require('../models/Review');
-const Booking = require('../models/Booking');
+const { User, Hotel, Review, Booking } = require('../models');
 
 let token;
 let user;

@@ -1,98 +1,74 @@
-const Flight = require('../models/Flight');
+const { Flight } = require('../models');
 
 // @desc    Get all flights
 // @route   GET /api/v1/flights
 // @access  Public
 exports.getFlights = async (req, res) => {
     try {
-        console.log('🔍 Fetching all flights with query:', req.query);
-        
+        const {
+            departureCity,
+            arrivalCity,
+            departureDate,
+            airline,
+            class: flightClass,
+            minPrice,
+            maxPrice,
+            seats,
+            page = 1,
+            limit = 10
+        } = req.query;
+
         // Build query
-        let query = Flight.find();
-
-        // Filter by departure city
-        if (req.query.departureCity) {
-            console.log(`🌍 Filtering by departure city: ${req.query.departureCity}`);
-            query = query.where('departure.city').equals(req.query.departureCity);
+        const query = {};
+        if (departureCity) query.departureCity = new RegExp(departureCity, 'i');
+        if (arrivalCity) query.arrivalCity = new RegExp(arrivalCity, 'i');
+        if (departureDate) {
+            query.departureDate = {
+                $gte: new Date(departureDate),
+                $lt: new Date(new Date(departureDate).setDate(new Date(departureDate).getDate() + 1))
+            };
         }
-
-        // Filter by arrival city
-        if (req.query.arrivalCity) {
-            console.log(`🌍 Filtering by arrival city: ${req.query.arrivalCity}`);
-            query = query.where('arrival.city').equals(req.query.arrivalCity);
-        }
-
-        // Filter by date range
-        if (req.query.departureDate) {
-            console.log(`📅 Filtering by departure date: ${req.query.departureDate}`);
-            const date = new Date(req.query.departureDate);
-            const nextDay = new Date(date);
-            nextDay.setDate(nextDay.getDate() + 1);
-            
-            query = query.where('departure.date').gte(date).lt(nextDay);
-        }
-
-        // Filter by price range
-        if (req.query.minPrice || req.query.maxPrice) {
-            query = query.where('price').gte(req.query.minPrice || 0);
-            if (req.query.maxPrice) {
-                query = query.where('price').lte(req.query.maxPrice);
-            }
-        }
-
-        // Filter by airline
-        if (req.query.airline) {
-            console.log(`✈️ Filtering by airline: ${req.query.airline}`);
-            query = query.where('airline').equals(req.query.airline);
-        }
-
-        // Filter by class
-        if (req.query.class) {
-            console.log(`💺 Filtering by class: ${req.query.class}`);
-            query = query.where('class').equals(req.query.class);
-        }
-
-        // Filter by available seats
-        if (req.query.seats) {
-            console.log(`👥 Filtering by minimum available seats: ${req.query.seats}`);
-            query = query.where('seats.available').gte(req.query.seats);
-        }
-
-        // Sort
-        if (req.query.sort) {
-            const sortBy = req.query.sort.split(',').join(' ');
-            query = query.sort(sortBy);
-        } else {
-            query = query.sort('departure.date');
-        }
+        if (airline) query.airline = new RegExp(airline, 'i');
+        if (flightClass) query[`price.${flightClass}`] = { $exists: true };
+        if (minPrice) query[`price.${flightClass || 'economy'}`] = { $gte: minPrice };
+        if (maxPrice) query[`price.${flightClass || 'economy'}`] = { ...query[`price.${flightClass || 'economy'}`], $lte: maxPrice };
+        if (seats) query[`availableSeats.${flightClass || 'economy'}`] = { $gte: seats };
 
         // Pagination
-        const page = parseInt(req.query.page, 10) || 1;
-        const limit = parseInt(req.query.limit, 10) || 10;
         const startIndex = (page - 1) * limit;
-        query = query.skip(startIndex).limit(limit);
+        const endIndex = page * limit;
+        const total = await Flight.countDocuments(query);
 
-        console.log('📊 Executing flight query...');
-        const flights = await query;
-        const total = await Flight.countDocuments();
+        const flights = await Flight.find(query)
+            .skip(startIndex)
+            .limit(limit);
 
-        console.log(`✅ Found ${flights.length} flights`);
-        res.status(200).json({
+        // Pagination result
+        const pagination = {};
+        if (endIndex < total) {
+            pagination.next = {
+                page: page + 1,
+                limit
+            };
+        }
+        if (startIndex > 0) {
+            pagination.prev = {
+                page: page - 1,
+                limit
+            };
+        }
+
+        res.json({
             success: true,
             count: flights.length,
-            total,
-            pagination: {
-                page,
-                limit,
-                totalPages: Math.ceil(total / limit)
-            },
+            pagination,
             data: flights
         });
     } catch (error) {
-        console.error('❌ Error fetching flights:', error);
+        console.error('Get flights error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 };
@@ -102,27 +78,23 @@ exports.getFlights = async (req, res) => {
 // @access  Public
 exports.getFlight = async (req, res) => {
     try {
-        console.log(`🔍 Fetching flight with ID: ${req.params.id}`);
         const flight = await Flight.findById(req.params.id);
-
         if (!flight) {
-            console.log('❌ Flight not found');
             return res.status(404).json({
                 success: false,
-                error: 'Flight not found'
+                message: 'Flight not found'
             });
         }
 
-        console.log('✅ Flight found');
-        res.status(200).json({
+        res.json({
             success: true,
             data: flight
         });
     } catch (error) {
-        console.error('❌ Error fetching flight:', error);
+        console.error('Get flight error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 };
@@ -132,27 +104,16 @@ exports.getFlight = async (req, res) => {
 // @access  Private/Admin
 exports.createFlight = async (req, res) => {
     try {
-        console.log('✈️ Creating new flight...');
-        console.log('Request body:', req.body);
-
         const flight = await Flight.create(req.body);
-
-        console.log(`✅ Flight created with ID: ${flight._id}`);
         res.status(201).json({
             success: true,
             data: flight
         });
     } catch (error) {
-        console.error('❌ Error creating flight:', error);
-        if (error.code === 11000) {
-            return res.status(400).json({
-                success: false,
-                error: 'Flight number already exists'
-            });
-        }
+        console.error('Create flight error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 };
@@ -162,32 +123,28 @@ exports.createFlight = async (req, res) => {
 // @access  Private/Admin
 exports.updateFlight = async (req, res) => {
     try {
-        console.log(`🔄 Updating flight with ID: ${req.params.id}`);
-        console.log('Update data:', req.body);
-
-        const flight = await Flight.findByIdAndUpdate(req.params.id, req.body, {
-            new: true,
-            runValidators: true
-        });
+        const flight = await Flight.findByIdAndUpdate(
+            req.params.id,
+            req.body,
+            { new: true, runValidators: true }
+        );
 
         if (!flight) {
-            console.log('❌ Flight not found');
             return res.status(404).json({
                 success: false,
-                error: 'Flight not found'
+                message: 'Flight not found'
             });
         }
 
-        console.log('✅ Flight updated successfully');
-        res.status(200).json({
+        res.json({
             success: true,
             data: flight
         });
     } catch (error) {
-        console.error('❌ Error updating flight:', error);
+        console.error('Update flight error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 };
@@ -197,30 +154,23 @@ exports.updateFlight = async (req, res) => {
 // @access  Private/Admin
 exports.deleteFlight = async (req, res) => {
     try {
-        console.log(`🗑️ Deleting flight with ID: ${req.params.id}`);
-        
-        const flight = await Flight.findById(req.params.id);
-
+        const flight = await Flight.findByIdAndDelete(req.params.id);
         if (!flight) {
-            console.log('❌ Flight not found');
             return res.status(404).json({
                 success: false,
-                error: 'Flight not found'
+                message: 'Flight not found'
             });
         }
 
-        await flight.deleteOne();
-        console.log('✅ Flight deleted successfully');
-        
-        res.status(200).json({
+        res.json({
             success: true,
-            data: {}
+            message: 'Flight deleted successfully'
         });
     } catch (error) {
-        console.error('❌ Error deleting flight:', error);
+        console.error('Delete flight error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 };
@@ -230,48 +180,39 @@ exports.deleteFlight = async (req, res) => {
 // @access  Public
 exports.searchFlights = async (req, res) => {
     try {
-        console.log('🔍 Searching flights with criteria:', req.query);
-        const {
-            from,
-            to,
-            date,
-            passengers = 1,
-            class: flightClass = 'economy'
-        } = req.query;
+        const { from, to, date, passengers = 1, class: flightClass = 'economy' } = req.query;
 
+        // Validate required parameters
         if (!from || !to || !date) {
             return res.status(400).json({
                 success: false,
-                error: 'Please provide departure city, arrival city, and date'
+                message: 'Please provide departure city, arrival city, and date'
             });
         }
 
-        const searchDate = new Date(date);
-        const nextDay = new Date(searchDate);
-        nextDay.setDate(nextDay.getDate() + 1);
-
-        const flights = await Flight.find({
-            'departure.city': from,
-            'arrival.city': to,
-            'departure.date': {
-                $gte: searchDate,
-                $lt: nextDay
+        // Build query
+        const query = {
+            departureCity: new RegExp(from, 'i'),
+            arrivalCity: new RegExp(to, 'i'),
+            departureDate: {
+                $gte: new Date(date),
+                $lt: new Date(new Date(date).setDate(new Date(date).getDate() + 1))
             },
-            'seats.available': { $gte: parseInt(passengers) },
-            class: flightClass
-        }).sort('price');
+            [`availableSeats.${flightClass}`]: { $gte: parseInt(passengers) }
+        };
 
-        console.log(`✅ Found ${flights.length} matching flights`);
-        res.status(200).json({
+        const flights = await Flight.find(query);
+
+        res.json({
             success: true,
             count: flights.length,
             data: flights
         });
     } catch (error) {
-        console.error('❌ Error searching flights:', error);
+        console.error('Search flights error:', error);
         res.status(500).json({
             success: false,
-            error: 'Server Error'
+            message: 'Server error'
         });
     }
 }; 

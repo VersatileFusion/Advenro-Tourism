@@ -1,7 +1,7 @@
 const request = require('supertest');
 const mongoose = require('mongoose');
 const app = require('../server');
-const User = require('../models/User');
+const { User } = require('../models');
 const { generateToken } = require('../utils/twoFactorAuth');
 
 let token;

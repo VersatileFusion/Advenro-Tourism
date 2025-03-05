@@ -118,4 +118,4 @@ bookingSchema.virtual('duration').get(function() {
     return days > 0 ? days : 1;
 });
 
-module.exports = mongoose.model('Booking', bookingSchema); 
+module.exports = { schema: bookingSchema }; 

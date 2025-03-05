@@ -374,4 +374,4 @@ userSchema.methods.updateTravelStats = async function(booking) {
     await this.save();
 };
 
-module.exports = mongoose.model('User', userSchema); 
+module.exports = { schema: userSchema }; 

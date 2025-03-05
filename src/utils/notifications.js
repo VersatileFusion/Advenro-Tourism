@@ -1,7 +1,7 @@
 const nodemailer = require('nodemailer');
 const twilio = require('twilio');
 const webpush = require('web-push');
-const User = require('../models/User');
+const { User } = require('../models');
 
 // Configure email transport
 const emailTransporter = nodemailer.createTransport({

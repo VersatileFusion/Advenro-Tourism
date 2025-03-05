@@ -22,6 +22,16 @@ const reviewCount = document.getElementById('reviewCount');
 const roomTypeSelect = document.getElementById('roomType');
 const similarHotelsList = document.getElementById('similarHotelsList');
 const bookingForm = document.getElementById('bookingForm');
+const checkInDate = document.getElementById('checkInDate');
+const checkOutDate = document.getElementById('checkOutDate');
+const roomType = document.getElementById('roomType');
+const guestsCount = document.getElementById('guestsCount');
+const roomRate = document.getElementById('roomRate');
+const taxesAndFees = document.getElementById('taxesAndFees');
+const totalPrice = document.getElementById('totalPrice');
+const reviewForm = document.getElementById('reviewForm');
+const ratingInput = document.getElementById('ratingInput');
+const newsletterForm = document.getElementById('newsletterForm');
 
 // State Management
 let currentState = {
@@ -32,6 +42,13 @@ let currentState = {
         checkOut: null
     }
 };
+let hotelData = null;
+let map = null;
+let marker = null;
+let currentReviewPage = 1;
+let totalReviewPages = 1;
+let swiper = null;
+let isFavorite = false;
 
 // Initialize page
 document.addEventListener('DOMContentLoaded', () => {
@@ -39,9 +56,66 @@ document.addEventListener('DOMContentLoaded', () => {
         showError('Hotel ID is missing');
         return;
     }
+    initializeDateInputs();
+    initializeEventListeners();
     loadHotelDetails();
-    initializeBookingForm();
 });
+
+// Initialize Date Inputs
+function initializeDateInputs() {
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const todayStr = formatDate(today);
+    const tomorrowStr = formatDate(tomorrow);
+    
+    checkInDate.min = todayStr;
+    checkOutDate.min = tomorrowStr;
+    
+    if (!checkInDate.value) checkInDate.value = todayStr;
+    if (!checkOutDate.value) checkOutDate.value = tomorrowStr;
+
+    checkInDate.addEventListener('change', updateCheckOutMinDate);
+}
+
+// Initialize Event Listeners
+function initializeEventListeners() {
+    bookingForm.addEventListener('submit', handleBooking);
+    reviewForm.addEventListener('submit', handleReviewSubmission);
+    roomType.addEventListener('change', updatePriceCalculation);
+    guestsCount.addEventListener('change', updatePriceCalculation);
+    checkInDate.addEventListener('change', updatePriceCalculation);
+    checkOutDate.addEventListener('change', updatePriceCalculation);
+    newsletterForm.addEventListener('submit', handleNewsletterSubscription);
+
+    // Rating input event listeners
+    document.querySelectorAll('.rating-input i').forEach(star => {
+        star.addEventListener('mouseover', handleStarHover);
+        star.addEventListener('mouseout', handleStarHoverOut);
+        star.addEventListener('click', handleStarClick);
+    });
+}
+
+// Format Date
+function formatDate(date) {
+    return date.toISOString().split('T')[0];
+}
+
+// Update Check-out Min Date
+function updateCheckOutMinDate() {
+    const selectedCheckIn = new Date(checkInDate.value);
+    const nextDay = new Date(selectedCheckIn);
+    nextDay.setDate(nextDay.getDate() + 1);
+    
+    checkOutDate.min = formatDate(nextDay);
+    
+    if (new Date(checkOutDate.value) <= selectedCheckIn) {
+        checkOutDate.value = formatDate(nextDay);
+    }
+
+    updatePriceCalculation();
+}
 
 // Load Hotel Details
 async function loadHotelDetails() {
@@ -50,11 +124,13 @@ async function loadHotelDetails() {
         const data = await response.json();
 
         if (data.success) {
-            displayHotelDetails(data.data);
+            hotelData = data.data;
+            displayHotelDetails();
             loadRoomTypes();
             loadAmenities();
             loadReviews();
             loadSimilarHotels();
+            checkFavoriteStatus();
             showContent();
         } else {
             showError('Failed to load hotel details');
@@ -66,25 +142,25 @@ async function loadHotelDetails() {
 }
 
 // Display Hotel Details
-function displayHotelDetails(hotel) {
+function displayHotelDetails() {
     // Update page title
-    document.title = `${hotel.name} - Tourism Booking Platform`;
+    document.title = `${hotelData.name} - Tourism Booking Platform`;
     
     // Update breadcrumb and header
-    hotelName.textContent = hotel.name;
-    hotelTitle.textContent = hotel.name;
-    hotelLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${hotel.location}`;
-    hotelPrice.textContent = `$${hotel.price}`;
-    hotelDescription.textContent = hotel.description;
+    hotelName.textContent = hotelData.name;
+    hotelTitle.textContent = hotelData.name;
+    hotelLocation.innerHTML = `<i class="fas fa-map-marker-alt"></i> ${hotelData.location}`;
+    hotelPrice.textContent = `$${hotelData.price}`;
+    hotelDescription.textContent = hotelData.description;
     
     // Display star rating
-    hotelStars.innerHTML = getStarRating(hotel.rating);
+    hotelStars.innerHTML = getStarRating(hotelData.rating);
     
     // Display photo gallery
-    displayGallery(hotel.photos);
+    displayGallery(hotelData.photos);
     
     // Initialize map
-    initializeMap(hotel.coordinates);
+    initializeMap();
 }
 
 // Load Room Types
@@ -177,13 +253,16 @@ function displayAmenities(amenities) {
 // Load Reviews
 async function loadReviews() {
     try {
-        const response = await fetch(`/api/v1/booking/hotels/${hotelId}/reviews?page=${currentState.reviewsPage}`);
+        const response = await fetch(`/api/v1/booking/hotels/${hotelData.id}/reviews?page=${currentReviewPage}`);
         const data = await response.json();
 
         if (data.success) {
-            displayReviews(data.data);
+            displayReviews(data.reviews, currentReviewPage === 1);
             updateReviewsStats(data.stats);
             updateReviewsPagination(data.pagination);
+            totalReviewPages = data.totalPages;
+        } else {
+            throw new Error(data.message || 'Failed to load reviews');
         }
     } catch (error) {
         console.error('Error loading reviews:', error);
@@ -191,20 +270,33 @@ async function loadReviews() {
 }
 
 // Display Reviews
-function displayReviews(reviews) {
+function displayReviews(reviews, isFirstPage) {
     reviewsList.innerHTML = reviews.map(review => `
         <div class="card mb-3">
             <div class="card-body">
                 <div class="d-flex justify-content-between mb-2">
                     <div>
-                        <h6 class="mb-0">${review.guest_name}</h6>
-                        <small class="text-muted">Stayed in ${review.stay_date}</small>
+                        <h6 class="card-title mb-1">${review.title}</h6>
+                        <div class="text-warning mb-1">
+                            ${getStarRating(review.rating)}
+                        </div>
                     </div>
-                    <div class="text-warning">
-                        ${getStarRating(review.rating)}
-                    </div>
+                    <small class="text-muted">
+                        ${formatDate(new Date(review.date))}
+                    </small>
                 </div>
                 <p class="card-text">${review.comment}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        By ${review.guest_name}
+                    </small>
+                    <div>
+                        <button class="btn btn-sm btn-outline-primary me-2" 
+                                onclick="handleReviewHelpful('${review.id}')">
+                            <i class="fas fa-thumbs-up"></i> Helpful (${review.helpful_count})
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
     `).join('');
@@ -219,7 +311,7 @@ function updateReviewsStats(stats) {
 // Load Similar Hotels
 async function loadSimilarHotels() {
     try {
-        const response = await fetch(`/api/v1/booking/hotels/${hotelId}/similar`);
+        const response = await fetch(`/api/v1/booking/hotels/${hotelData.id}/similar`);
         const data = await response.json();
 
         if (data.success) {
@@ -349,29 +441,259 @@ function displayGallery(photos) {
     `).join('');
 }
 
-function initializeMap(coordinates) {
-    // Implementation depends on the map service you're using (Google Maps, Leaflet, etc.)
-    console.log('Map initialization with coordinates:', coordinates);
+function initializeMap() {
+    if (!map) {
+        map = L.map(mapContainer).setView([
+            hotelData.latitude,
+            hotelData.longitude
+        ], 15);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+    }
+
+    if (marker) {
+        marker.remove();
+    }
+
+    marker = L.marker([hotelData.latitude, hotelData.longitude])
+        .addTo(map)
+        .bindPopup(`
+            <strong>${hotelData.name}</strong><br>
+            ${hotelData.location}
+        `);
+
+    // Display location details
+    locationDetails.innerHTML = `
+        <div class="mt-3">
+            <h6 class="mb-2">Nearby Attractions:</h6>
+            <ul class="list-unstyled">
+                ${hotelData.nearby_attractions.map(attraction => `
+                    <li class="mb-2">
+                        <i class="fas fa-map-marker-alt text-primary me-2"></i>
+                        ${attraction.name} (${attraction.distance} away)
+                    </li>
+                `).join('')}
+            </ul>
+        </div>
+    `;
 }
 
-// UI State Management
-function showLoading() {
-    loadingState.classList.remove('d-none');
-    errorState.classList.add('d-none');
-    hotelContent.classList.add('d-none');
+// Update Price Calculation
+function updatePriceCalculation() {
+    const selectedRoom = roomType.options[roomType.selectedIndex];
+    if (!selectedRoom.value) {
+        resetPriceDisplay();
+        return;
+    }
+
+    const pricePerNight = parseFloat(selectedRoom.dataset.price);
+    const checkIn = new Date(checkInDate.value);
+    const checkOut = new Date(checkOutDate.value);
+    const nights = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+
+    if (isNaN(nights) || nights < 1) {
+        resetPriceDisplay();
+        return;
+    }
+
+    const roomTotal = pricePerNight * nights;
+    const taxRate = 0.12; // 12% tax
+    const taxAmount = roomTotal * taxRate;
+    const total = roomTotal + taxAmount;
+
+    roomRate.textContent = `$${roomTotal.toFixed(2)}`;
+    taxesAndFees.textContent = `$${taxAmount.toFixed(2)}`;
+    totalPrice.textContent = `$${total.toFixed(2)}`;
 }
 
+// Reset Price Display
+function resetPriceDisplay() {
+    roomRate.textContent = '$0';
+    taxesAndFees.textContent = '$0';
+    totalPrice.textContent = '$0';
+}
+
+// Select Room
+function selectRoom(roomId) {
+    roomType.value = roomId;
+    updatePriceCalculation();
+    roomType.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Check Favorite Status
+async function checkFavoriteStatus() {
+    try {
+        const response = await fetch(`/api/v1/booking/favorites/check/${hotelData.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+            isFavorite = data.is_favorite;
+            updateFavoriteButton();
+        }
+    } catch (error) {
+        console.error('Error checking favorite status:', error);
+    }
+}
+
+// Toggle Favorite
+async function toggleFavorite() {
+    try {
+        const response = await fetch(`/api/v1/booking/favorites/${hotelData.id}`, {
+            method: isFavorite ? 'DELETE' : 'POST'
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            isFavorite = !isFavorite;
+            updateFavoriteButton();
+            showAlert(
+                isFavorite ? 'Added to favorites!' : 'Removed from favorites',
+                'success'
+            );
+        } else {
+            throw new Error(data.message || 'Failed to update favorite status');
+        }
+    } catch (error) {
+        showAlert(error.message, 'danger');
+    }
+}
+
+// Update Favorite Button
+function updateFavoriteButton() {
+    const icon = favoriteButton.querySelector('i');
+    icon.className = isFavorite ? 'fas fa-heart' : 'far fa-heart';
+}
+
+// Handle Review Helpful
+async function handleReviewHelpful(reviewId) {
+    try {
+        const response = await fetch(`/api/v1/booking/reviews/${reviewId}/helpful`, {
+            method: 'POST'
+        });
+        const data = await response.json();
+
+        if (data.success) {
+            // Refresh reviews to show updated helpful count
+            currentReviewPage = 1;
+            loadReviews();
+        } else {
+            throw new Error(data.message || 'Failed to mark review as helpful');
+        }
+    } catch (error) {
+        showAlert(error.message, 'danger');
+    }
+}
+
+// Handle Review Submission
+async function handleReviewSubmission(e) {
+    e.preventDefault();
+
+    const reviewData = {
+        hotel_id: hotelData.id,
+        rating: parseInt(ratingInput.value),
+        title: document.getElementById('reviewTitle').value,
+        comment: document.getElementById('reviewText').value
+    };
+
+    try {
+        const response = await fetch('/api/v1/booking/reviews/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(reviewData)
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+            // Close modal and refresh reviews
+            bootstrap.Modal.getInstance(document.getElementById('reviewModal')).hide();
+            currentReviewPage = 1;
+            loadReviews();
+            showAlert('Thank you for your review!', 'success');
+        } else {
+            throw new Error(data.message || 'Failed to submit review');
+        }
+    } catch (error) {
+        showAlert(error.message, 'danger');
+    }
+}
+
+// Handle Newsletter Subscription
+async function handleNewsletterSubscription(e) {
+    e.preventDefault();
+    
+    const emailInput = e.target.querySelector('input[type="email"]');
+    const submitButton = e.target.querySelector('button[type="submit"]');
+    
+    if (!emailInput.value) {
+        showAlert('Please enter your email address.', 'danger');
+        return;
+    }
+
+    try {
+        submitButton.disabled = true;
+        submitButton.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Subscribing...';
+
+        const response = await fetch('/api/v1/booking/newsletter/subscribe', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                email: emailInput.value
+            })
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+            showAlert('Thank you for subscribing to our newsletter!', 'success');
+            emailInput.value = '';
+        } else {
+            throw new Error(data.message || 'Failed to subscribe. Please try again.');
+        }
+    } catch (error) {
+        showAlert(error.message, 'danger');
+    } finally {
+        submitButton.disabled = false;
+        submitButton.innerHTML = 'Subscribe';
+    }
+}
+
+// Show Alert Message
+function showAlert(message, type) {
+    const existingAlert = document.querySelector('.alert:not(#errorState)');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
+
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+    alert.style.zIndex = '1050';
+    alert.role = 'alert';
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    `;
+
+    document.body.appendChild(alert);
+
+    setTimeout(() => {
+        const bsAlert = new bootstrap.Alert(alert);
+        bsAlert.close();
+    }, 5000);
+}
+
+// Show Error
 function showError(message) {
     loadingState.classList.add('d-none');
     errorState.classList.remove('d-none');
-    hotelContent.classList.add('d-none');
     errorState.textContent = message;
-}
-
-function showContent() {
-    loadingState.classList.add('d-none');
-    errorState.classList.add('d-none');
-    hotelContent.classList.remove('d-none');
 }
 
 // Update Reviews Pagination
@@ -413,7 +735,34 @@ function updateReviewsPagination(paginationData) {
 
 // Change Reviews Page
 function changePage(page) {
-    currentState.reviewsPage = page;
+    currentReviewPage = page;
     loadReviews();
     reviewsList.scrollIntoView({ behavior: 'smooth' });
+}
+
+// Rating Input Handlers
+function handleStarHover(e) {
+    const rating = parseInt(e.target.dataset.rating);
+    updateStarDisplay(rating, 'hover');
+}
+
+function handleStarHoverOut() {
+    const currentRating = parseInt(ratingInput.value) || 0;
+    updateStarDisplay(currentRating, 'selected');
+}
+
+function handleStarClick(e) {
+    const rating = parseInt(e.target.dataset.rating);
+    ratingInput.value = rating;
+    updateStarDisplay(rating, 'selected');
+}
+
+function updateStarDisplay(rating, state) {
+    document.querySelectorAll('.rating-input i').forEach((star, index) => {
+        if (index < rating) {
+            star.className = 'fas fa-star text-warning';
+        } else {
+            star.className = state === 'hover' ? 'far fa-star text-warning' : 'far fa-star';
+        }
+    });
 } 

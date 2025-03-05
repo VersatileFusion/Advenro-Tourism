@@ -6,6 +6,8 @@ const { promisify } = require('util');
 const zlib = require('zlib');
 const gzip = promisify(zlib.gzip);
 const ungzip = promisify(zlib.gunzip);
+const { Hotel, Booking } = require('../models');
+const AppError = require('../utils/appError');
 
 class BookingComService {
     constructor() {
@@ -516,5 +518,41 @@ class BookingComService {
         }
     }
 }
+
+exports.createBooking = async (hotelId, bookingData, userId) => {
+    const hotel = await Hotel.findById(hotelId);
+    if (!hotel) {
+        throw new AppError('Hotel not found', 404);
+    }
+
+    // Check if room is available for the dates
+    const { roomType, checkIn, checkOut, guests } = bookingData;
+    const room = hotel.rooms.find(r => r.type === roomType);
+    if (!room) {
+        throw new AppError('Room type not found', 404);
+    }
+
+    // Calculate total price
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const nights = Math.ceil((checkOutDate - checkInDate) / (1000 * 60 * 60 * 24));
+    const totalPrice = room.price * nights;
+
+    // Create booking
+    const booking = await Booking.create({
+        user: userId,
+        item: hotelId,
+        bookingType: 'Hotel',
+        startDate: checkIn,
+        endDate: checkOut,
+        price: totalPrice,
+        guests,
+        roomType,
+        status: 'confirmed',
+        paymentStatus: 'pending'
+    });
+
+    return booking;
+};
 
 module.exports = new BookingComService(); 

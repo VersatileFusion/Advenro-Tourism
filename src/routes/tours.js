@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const { authenticate, authorize } = require('../middleware/auth');
+const { tourValidation } = require('../middleware/validator');
 const {
     getTours,
     getTour,
@@ -9,9 +11,6 @@ const {
     getToursWithinRadius,
     getTourStats
 } = require('../controllers/tourController');
-
-const { protect, authorize } = require('../middleware/auth');
-const { tourValidation } = require('../middleware/validator');
 
 /**
  * @swagger
@@ -146,7 +145,7 @@ router.get('/:id', getTour);
  *       401:
  *         description: Not authorized
  */
-router.post('/', protect, authorize('admin'), tourValidation, createTour);
+router.post('/', authenticate, authorize('admin', 'guide'), tourValidation, createTour);
 
 /**
  * @swagger
@@ -174,7 +173,7 @@ router.post('/', protect, authorize('admin'), tourValidation, createTour);
  *       404:
  *         description: Tour not found
  */
-router.put('/:id', protect, authorize('admin'), tourValidation, updateTour);
+router.put('/:id', authenticate, authorize('admin', 'guide'), tourValidation, updateTour);
 
 /**
  * @swagger
@@ -196,7 +195,7 @@ router.put('/:id', protect, authorize('admin'), tourValidation, updateTour);
  *       404:
  *         description: Tour not found
  */
-router.delete('/:id', protect, authorize('admin'), deleteTour);
+router.delete('/:id', authenticate, authorize('admin'), deleteTour);
 
 /**
  * @swagger

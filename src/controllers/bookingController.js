@@ -1,7 +1,4 @@
-const Booking = require('../models/Booking');
-const Hotel = require('../models/Hotel');
-const Flight = require('../models/Flight');
-const Tour = require('../models/Tour');
+const { Booking, Hotel, Flight, Tour } = require('../models');
 
 // @desc    Get all bookings
 // @route   GET /api/v1/bookings

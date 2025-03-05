@@ -25,9 +25,16 @@ const {
     getHotelPaymentOptions,
     getHotelAccessibility,
     getSimilarHotels,
-    getCacheStats
+    getCacheStats,
+    createBooking,
+    getUserBookings,
+    getBookingDetails,
+    cancelBooking
 } = require('../controllers/bookingComController');
 const { protect, authorize } = require('../middleware/auth');
+const { authenticate } = require('../middleware/auth');
+const { validate } = require('../middleware/validate');
+const { schemas } = require('../middleware/validate');
 
 const router = express.Router();
 
@@ -526,7 +533,7 @@ router.get('/hotels/:id/sustainability', getHotelSustainability);
  *       500:
  *         description: Server error
  */
-router.delete('/cache', protect, authorize('admin'), clearCache);
+router.delete('/cache', authenticate, authorize('admin'), clearCache);
 
 /**
  * @swagger
@@ -726,5 +733,11 @@ router.get('/hotels/:id/similar', getSimilarHotels);
  *         description: Rate limit exceeded
  */
 router.get('/cache/stats', getCacheStats);
+
+// Protected routes
+router.post('/hotels/:id/book', authenticate, validate(schemas.createBookingComBooking), createBooking);
+router.get('/my-bookings', authenticate, getUserBookings);
+router.get('/my-bookings/:id', authenticate, getBookingDetails);
+router.put('/my-bookings/:id/cancel', authenticate, cancelBooking);
 
 module.exports = router; 

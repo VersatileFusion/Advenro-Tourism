@@ -83,11 +83,12 @@ app.get('/', (req, res) => {
 // Mount routers
 console.log('🛣️ Mounting API routes...');
 app.use('/api/v1/auth', auth);
+app.use('/api/v1/users', users);
 app.use('/api/v1/hotels', hotels);
 app.use('/api/v1/flights', flights);
 app.use('/api/v1/tours', tours);
+app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/bookings', bookings);
-app.use('/api/v1/users', users);
 app.use('/api/v1/booking', bookingCom);
 
 // Error handler

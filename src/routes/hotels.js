@@ -9,7 +9,7 @@ const {
     getHotelsInRadius
 } = require('../controllers/hotelController');
 
-const { protect, authorize } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const { hotelValidation } = require('../middleware/validator');
 
 /**
@@ -117,7 +117,7 @@ router.get('/:id', getHotel);
  *       401:
  *         description: Not authorized
  */
-router.post('/', protect, authorize('admin'), hotelValidation, createHotel);
+router.post('/', authenticate, authorize('admin'), hotelValidation, createHotel);
 
 /**
  * @swagger
@@ -145,7 +145,7 @@ router.post('/', protect, authorize('admin'), hotelValidation, createHotel);
  *       404:
  *         description: Hotel not found
  */
-router.put('/:id', protect, authorize('admin'), hotelValidation, updateHotel);
+router.put('/:id', authenticate, authorize('admin'), hotelValidation, updateHotel);
 
 /**
  * @swagger
@@ -167,7 +167,7 @@ router.put('/:id', protect, authorize('admin'), hotelValidation, updateHotel);
  *       404:
  *         description: Hotel not found
  */
-router.delete('/:id', protect, authorize('admin'), deleteHotel);
+router.delete('/:id', authenticate, authorize('admin'), deleteHotel);
 
 /**
  * @swagger

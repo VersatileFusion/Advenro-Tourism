@@ -9,7 +9,7 @@ const {
     searchFlights
 } = require('../controllers/flightController');
 
-const { protect, authorize } = require('../middleware/auth');
+const { authenticate, authorize } = require('../middleware/auth');
 const { flightValidation } = require('../middleware/validator');
 
 /**
@@ -186,7 +186,7 @@ router.get('/:id', getFlight);
  *       401:
  *         description: Not authorized
  */
-router.post('/', protect, authorize('admin'), flightValidation, createFlight);
+router.post('/', authenticate, authorize('admin'), flightValidation, createFlight);
 
 /**
  * @swagger
@@ -214,7 +214,7 @@ router.post('/', protect, authorize('admin'), flightValidation, createFlight);
  *       404:
  *         description: Flight not found
  */
-router.put('/:id', protect, authorize('admin'), flightValidation, updateFlight);
+router.put('/:id', authenticate, authorize('admin'), flightValidation, updateFlight);
 
 /**
  * @swagger
@@ -236,6 +236,6 @@ router.put('/:id', protect, authorize('admin'), flightValidation, updateFlight);
  *       404:
  *         description: Flight not found
  */
-router.delete('/:id', protect, authorize('admin'), deleteFlight);
+router.delete('/:id', authenticate, authorize('admin'), deleteFlight);
 
 module.exports = router; 

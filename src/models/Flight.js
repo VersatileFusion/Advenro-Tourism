@@ -141,4 +141,4 @@ flightSchema.pre('save', function(next) {
     next();
 });
 
-module.exports = mongoose.model('Flight', flightSchema); 
+module.exports = { schema: flightSchema }; 

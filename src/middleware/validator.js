@@ -1,4 +1,5 @@
-const { validationResult, check } = require('express-validator');
+const { validationResult, check, body } = require('express-validator');
+const { validate } = require('./validate');
 
 // Validation error handler middleware
 const validateRequest = (req, res, next) => {
@@ -36,84 +37,150 @@ exports.registerValidation = [
     validateRequest
 ];
 
-// Tourism validation rules
-exports.hotelValidation = [
-    check('name')
+// Hotel validation rules
+const hotelValidationRules = [
+    body('name')
         .trim()
         .notEmpty()
         .withMessage('Hotel name is required')
-        .isLength({ min: 2, max: 100 })
-        .withMessage('Name must be between 2 and 100 characters'),
-    check('description')
+        .isLength({ max: 100 })
+        .withMessage('Hotel name cannot be more than 100 characters'),
+    body('description')
         .trim()
         .notEmpty()
-        .withMessage('Description is required'),
-    check('price')
+        .withMessage('Hotel description is required')
+        .isLength({ max: 2000 })
+        .withMessage('Description cannot be more than 2000 characters'),
+    body('city')
+        .trim()
         .notEmpty()
-        .withMessage('Price is required')
-        .isNumeric()
-        .withMessage('Price must be a number'),
-    check('location')
+        .withMessage('City is required'),
+    body('address')
+        .trim()
         .notEmpty()
-        .withMessage('Location is required'),
-    check('rating')
+        .withMessage('Address is required'),
+    body('pricePerNight')
+        .notEmpty()
+        .withMessage('Price per night is required')
+        .isFloat({ min: 0 })
+        .withMessage('Price must be a positive number'),
+    body('rating')
         .optional()
         .isFloat({ min: 0, max: 5 })
-        .withMessage('Rating must be between 0 and 5'),
-    validateRequest
+        .withMessage('Rating must be between 0 and 5')
 ];
 
-exports.flightValidation = [
-    check('flightNumber')
+// Flight validation rules
+const flightValidationRules = [
+    body('flightNumber')
         .trim()
         .notEmpty()
         .withMessage('Flight number is required'),
-    check('departure')
+    body('airline')
+        .trim()
         .notEmpty()
-        .withMessage('Departure details are required'),
-    check('arrival')
+        .withMessage('Airline name is required'),
+    body('departureCity')
+        .trim()
         .notEmpty()
-        .withMessage('Arrival details are required'),
-    check('price')
+        .withMessage('Departure city is required'),
+    body('arrivalCity')
+        .trim()
         .notEmpty()
-        .withMessage('Price is required')
-        .isNumeric()
-        .withMessage('Price must be a number'),
-    check('seats')
+        .withMessage('Arrival city is required'),
+    body('departureDate')
         .notEmpty()
-        .withMessage('Available seats are required')
-        .isNumeric()
-        .withMessage('Seats must be a number'),
-    validateRequest
+        .withMessage('Departure date is required')
+        .isISO8601()
+        .withMessage('Invalid departure date format'),
+    body('arrivalDate')
+        .notEmpty()
+        .withMessage('Arrival date is required')
+        .isISO8601()
+        .withMessage('Invalid arrival date format'),
+    body('price.economy')
+        .notEmpty()
+        .withMessage('Economy class price is required')
+        .isFloat({ min: 0 })
+        .withMessage('Price must be a positive number'),
+    body('price.business')
+        .notEmpty()
+        .withMessage('Business class price is required')
+        .isFloat({ min: 0 })
+        .withMessage('Price must be a positive number'),
+    body('price.first')
+        .notEmpty()
+        .withMessage('First class price is required')
+        .isFloat({ min: 0 })
+        .withMessage('Price must be a positive number'),
+    body('availableSeats.economy')
+        .notEmpty()
+        .withMessage('Available economy seats is required')
+        .isInt({ min: 0 })
+        .withMessage('Available seats cannot be negative'),
+    body('availableSeats.business')
+        .notEmpty()
+        .withMessage('Available business seats is required')
+        .isInt({ min: 0 })
+        .withMessage('Available seats cannot be negative'),
+    body('availableSeats.first')
+        .notEmpty()
+        .withMessage('Available first class seats is required')
+        .isInt({ min: 0 })
+        .withMessage('Available seats cannot be negative'),
+    body('aircraft')
+        .trim()
+        .notEmpty()
+        .withMessage('Aircraft type is required'),
+    body('duration')
+        .notEmpty()
+        .withMessage('Flight duration is required')
+        .isInt({ min: 1 })
+        .withMessage('Duration must be at least 1 minute')
 ];
 
+// Export validation middleware
+exports.hotelValidation = validate(hotelValidationRules);
+exports.flightValidation = validate(flightValidationRules);
+
 exports.tourValidation = [
-    check('name')
+    body('name')
         .trim()
         .notEmpty()
         .withMessage('Tour name is required')
-        .isLength({ min: 2, max: 100 })
-        .withMessage('Name must be between 2 and 100 characters'),
-    check('description')
+        .isLength({ max: 100 })
+        .withMessage('Tour name cannot be more than 100 characters'),
+    body('description')
         .trim()
         .notEmpty()
-        .withMessage('Description is required'),
-    check('price')
+        .withMessage('Tour description is required')
+        .isLength({ max: 2000 })
+        .withMessage('Description cannot be more than 2000 characters'),
+    body('summary')
+        .trim()
         .notEmpty()
-        .withMessage('Price is required')
-        .isNumeric()
-        .withMessage('Price must be a number'),
-    check('duration')
+        .withMessage('Tour summary is required'),
+    body('difficulty')
+        .trim()
         .notEmpty()
-        .withMessage('Duration is required')
-        .isNumeric()
-        .withMessage('Duration must be a number'),
-    check('maxGroupSize')
+        .withMessage('Tour difficulty is required')
+        .isIn(['easy', 'medium', 'difficult'])
+        .withMessage('Difficulty must be either: easy, medium, difficult'),
+    body('price')
         .notEmpty()
-        .withMessage('Max group size is required')
-        .isNumeric()
-        .withMessage('Max group size must be a number'),
-    validateRequest
+        .withMessage('Tour price is required')
+        .isFloat({ min: 0 })
+        .withMessage('Price must be a positive number'),
+    body('duration')
+        .notEmpty()
+        .withMessage('Tour duration is required')
+        .isInt({ min: 1 })
+        .withMessage('Duration must be at least 1'),
+    body('maxGroupSize')
+        .notEmpty()
+        .withMessage('Maximum group size is required')
+        .isInt({ min: 1 })
+        .withMessage('Group size must be at least 1')
 ];
 
 exports.bookingValidation = [
@@ -138,4 +205,35 @@ exports.bookingValidation = [
         .isISO8601()
         .withMessage('Invalid date format'),
     validateRequest
-]; 
+];
+
+const reviewValidationRules = [
+    body('review')
+        .trim()
+        .notEmpty()
+        .withMessage('Review text is required')
+        .isLength({ max: 1000 })
+        .withMessage('Review cannot be more than 1000 characters'),
+    body('rating')
+        .notEmpty()
+        .withMessage('Rating is required')
+        .isFloat({ min: 1, max: 5 })
+        .withMessage('Rating must be between 1 and 5'),
+    body('tour')
+        .optional()
+        .isMongoId()
+        .withMessage('Invalid tour ID'),
+    body('user')
+        .optional()
+        .isMongoId()
+        .withMessage('Invalid user ID')
+];
+
+exports.reviewValidation = validate(reviewValidationRules);
+
+module.exports = {
+    hotelValidation: validate(hotelValidationRules),
+    tourValidation: validate(exports.tourValidation),
+    flightValidation: validate(flightValidationRules),
+    reviewValidation: validate(reviewValidationRules)
+}; 

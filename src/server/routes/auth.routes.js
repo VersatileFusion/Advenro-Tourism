@@ -1,0 +1,22 @@
+const express = require('express');
+const router = express.Router();
+const authController = require('../controllers/auth.controller');
+const { validateRegistration, validateLogin } = require('../middleware/validation');
+const { authenticate } = require('../middleware/auth');
+
+// Public routes
+router.post('/register', validateRegistration, authController.register);
+router.post('/login', validateLogin, authController.login);
+router.post('/forgot-password', authController.forgotPassword);
+router.post('/reset-password', authController.resetPassword);
+router.post('/google', authController.googleAuth);
+router.post('/facebook', authController.facebookAuth);
+
+// Protected routes
+router.get('/profile', authenticate, authController.getProfile);
+router.put('/profile', authenticate, authController.updateProfile);
+router.put('/settings', authenticate, authController.updateSettings);
+router.delete('/account', authenticate, authController.deleteAccount);
+router.post('/avatar', authenticate, authController.updateAvatar);
+
+module.exports = router; 

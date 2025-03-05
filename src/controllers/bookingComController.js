@@ -2,6 +2,8 @@ const asyncHandler = require('../middleware/async');
 const bookingComService = require('../services/bookingComService');
 const ErrorResponse = require('../utils/errorResponse');
 const rateLimit = require('express-rate-limit');
+const { Booking } = require('../models');
+const AppError = require('../utils/appError');
 
 // Enhanced rate limiters with different tiers
 const createRateLimiter = (options) => rateLimit({
@@ -300,5 +302,82 @@ exports.getCacheStats = asyncHandler(async (req, res, next) => {
     res.status(200).json({
         success: true,
         data: stats
+    });
+});
+
+// @desc    Create a new booking
+// @route   POST /api/v1/booking/hotels/:id/book
+// @access  Private
+exports.createBooking = asyncHandler(async (req, res, next) => {
+    const booking = await Booking.create({
+        ...req.body,
+        user: req.user.id,
+        hotel: req.params.id
+    });
+
+    res.status(201).json({
+        success: true,
+        data: booking
+    });
+});
+
+// @desc    Get user's bookings
+// @route   GET /api/v1/booking/my-bookings
+// @access  Private
+exports.getUserBookings = asyncHandler(async (req, res, next) => {
+    const bookings = await Booking.find({ user: req.user.id })
+        .populate('hotel', 'name location rating')
+        .sort('-createdAt');
+
+    res.status(200).json({
+        success: true,
+        count: bookings.length,
+        data: bookings
+    });
+});
+
+// @desc    Get booking details
+// @route   GET /api/v1/booking/my-bookings/:id
+// @access  Private
+exports.getBookingDetails = asyncHandler(async (req, res, next) => {
+    const booking = await Booking.findOne({
+        _id: req.params.id,
+        user: req.user.id
+    }).populate('hotel', 'name location rating amenities');
+
+    if (!booking) {
+        return next(new AppError('Booking not found', 404));
+    }
+
+    res.status(200).json({
+        success: true,
+        data: booking
+    });
+});
+
+// @desc    Cancel booking
+// @route   PUT /api/v1/booking/my-bookings/:id/cancel
+// @access  Private
+exports.cancelBooking = asyncHandler(async (req, res, next) => {
+    const booking = await Booking.findOne({
+        _id: req.params.id,
+        user: req.user.id
+    });
+
+    if (!booking) {
+        return next(new AppError('Booking not found', 404));
+    }
+
+    if (booking.status === 'cancelled') {
+        return next(new AppError('Booking is already cancelled', 400));
+    }
+
+    booking.status = 'cancelled';
+    booking.cancelledAt = Date.now();
+    await booking.save();
+
+    res.status(200).json({
+        success: true,
+        data: booking
     });
 }); 

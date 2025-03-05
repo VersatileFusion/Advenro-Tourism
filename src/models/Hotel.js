@@ -133,4 +133,4 @@ const hotelSchema = new mongoose.Schema({
 // Create index for location-based queries
 hotelSchema.index({ 'location.coordinates': '2dsphere' });
 
-module.exports = mongoose.model('Hotel', hotelSchema); 
+module.exports = { schema: hotelSchema }; 
