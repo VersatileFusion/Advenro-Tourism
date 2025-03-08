@@ -25,7 +25,7 @@ const crypto = require('crypto');
  *           description: User's password
  *         role:
  *           type: string
- *           enum: [user, admin]
+ *           enum: [user, admin, guide]
  *           description: User's role
  *         phone:
  *           type: string
@@ -65,28 +65,23 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Please add a name'],
-        trim: true,
-        maxlength: [50, 'Name cannot be more than 50 characters']
+        required: [true, 'Please provide your name']
     },
     email: {
         type: String,
-        required: [true, 'Please add an email'],
+        required: [true, 'Please provide your email'],
         unique: true,
-        match: [
-            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
-            'Please add a valid email'
-        ]
+        lowercase: true
     },
     password: {
         type: String,
-        required: [true, 'Please add a password'],
-        minlength: [6, 'Password must be at least 6 characters'],
+        required: [true, 'Please provide a password'],
+        minlength: 8,
         select: false
     },
     role: {
         type: String,
-        enum: ['user', 'admin'],
+        enum: ['user', 'admin', 'guide'],
         default: 'user'
     },
     phone: {
@@ -104,16 +99,6 @@ const userSchema = new mongoose.Schema({
         country: String
     },
     preferences: {
-        currency: {
-            type: String,
-            enum: ['USD', 'EUR', 'GBP'],
-            default: 'USD'
-        },
-        language: {
-            type: String,
-            enum: ['en', 'es', 'fr'],
-            default: 'en'
-        },
         notifications: {
             email: {
                 type: Boolean,
@@ -123,6 +108,14 @@ const userSchema = new mongoose.Schema({
                 type: Boolean,
                 default: false
             }
+        },
+        currency: {
+            type: String,
+            default: 'USD'
+        },
+        language: {
+            type: String,
+            default: 'en'
         }
     },
     avatar: {
@@ -142,31 +135,35 @@ const userSchema = new mongoose.Schema({
         type: Date,
         default: Date.now
     },
-    // Two-Factor Authentication
     twoFactorEnabled: {
         type: Boolean,
         default: false
     },
-    twoFactorSecret: {
+    twoFactorSecret: String,
+    interests: [String],
+    status: {
         type: String,
-        select: false
+        enum: ['active', 'inactive', 'suspended'],
+        default: 'active'
     },
-    
-    // Social Media Profiles
-    socialProfiles: {
-        facebook: String,
-        twitter: String,
-        instagram: String,
-        linkedin: String
+    failedLoginAttempts: {
+        type: Number,
+        default: 0
     },
-    
-    // User Interests and Preferences
-    interests: [{
-        type: String,
-        enum: ['beach', 'mountain', 'city', 'culture', 'food', 'adventure', 'relaxation', 'shopping']
-    }],
-    
-    // Travel Stats
+    accountLocked: {
+        type: Boolean,
+        default: false
+    },
+    isBanned: {
+        type: Boolean,
+        default: false
+    },
+    banReason: String,
+    bannedAt: Date,
+    bannedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     travelStats: {
         totalTrips: {
             type: Number,
@@ -185,75 +182,49 @@ const userSchema = new mongoose.Schema({
             default: 0
         }
     },
-    
-    // Account Status
-    status: {
-        type: String,
-        enum: ['active', 'inactive', 'suspended', 'deleted'],
-        default: 'active'
-    },
-    
-    // Newsletter Subscription
     newsletter: {
         subscribed: {
             type: Boolean,
             default: false
         },
-        topics: [{
-            type: String,
-            enum: ['deals', 'news', 'tips', 'destinations']
-        }]
+        topics: [String]
     },
-    
-    // Login History
-    loginHistory: [{
-        timestamp: {
-            type: Date,
-            default: Date.now
-        },
-        ip: String,
-        device: String,
-        location: String
-    }],
-    
-    // Failed Login Attempts
-    failedLoginAttempts: {
-        type: Number,
-        default: 0
-    },
-    accountLocked: {
-        type: Boolean,
-        default: false
-    },
-    lockUntil: Date,
-    
-    // Saved Items
     savedItems: {
         hotels: [{
-            type: mongoose.Schema.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Hotel'
         }],
         flights: [{
-            type: mongoose.Schema.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Flight'
         }],
         tours: [{
-            type: mongoose.Schema.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Tour'
         }]
-    }
+    },
+    loginHistory: [{
+        timestamp: Date,
+        ipAddress: String,
+        userAgent: String,
+        location: String
+    }]
 }, {
     toJSON: { virtuals: true },
     toObject: { virtuals: true }
 });
 
+// Add indexes for better query performance
+userSchema.index({ email: 1 }, { unique: true });
+userSchema.index({ role: 1 });
+userSchema.index({ status: 1 });
+userSchema.index({ isBanned: 1 });
+
 // Encrypt password using bcrypt
 userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) {
-        next();
-    }
-    const salt = await bcrypt.genSalt(10);
-    this.password = await bcrypt.hash(this.password, salt);
+    if (!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password, 12);
+    next();
 });
 
 // Sign JWT and return
@@ -263,9 +234,9 @@ userSchema.methods.getSignedJwtToken = function() {
     });
 };
 
-// Match user entered password to hashed password in database
-userSchema.methods.matchPassword = async function(enteredPassword) {
-    return await bcrypt.compare(enteredPassword, this.password);
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+    return await bcrypt.compare(candidatePassword, this.password);
 };
 
 // Generate and hash email verification token

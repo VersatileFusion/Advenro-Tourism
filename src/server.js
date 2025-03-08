@@ -9,6 +9,7 @@ const cookieParser = require('cookie-parser');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const connectDB = require('./config/database');
+const path = require('path');
 
 // Load env vars
 console.log('🔧 Loading environment variables...');
@@ -27,6 +28,7 @@ const bookings = require('./routes/bookings');
 const users = require('./routes/users');
 const reviews = require('./routes/reviews');
 const bookingCom = require('./routes/bookingCom');
+const admin = require('./routes/admin');
 
 const app = express();
 
@@ -40,9 +42,17 @@ app.use(cookieParser());
 console.log('🌐 Enabling CORS...');
 app.use(cors());
 
-// Set security headers
+// Set security headers with configurations for static files
 console.log('🔒 Setting security headers...');
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: false,
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" }
+}));
+
+// Serve static files
+console.log('📂 Setting up static file serving...');
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Rate limiting
 console.log('⚡ Setting up rate limiting...');
@@ -90,10 +100,31 @@ app.use('/api/v1/tours', tours);
 app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/bookings', bookings);
 app.use('/api/v1/booking', bookingCom);
+app.use('/api/v1/admin', admin);
 
 // Error handler
 app.use((err, req, res, next) => {
     console.error('❌ Error:', err);
+    
+    // Log error to ErrorLog model
+    if (err.status !== 404) {
+        const { ErrorLog } = require('./models');
+        ErrorLog.create({
+            type: 'system',
+            message: err.message,
+            stack: err.stack,
+            path: req.path,
+            method: req.method,
+            statusCode: err.status || 500,
+            user: req.user ? req.user.id : null,
+            metadata: {
+                query: req.query,
+                body: req.body,
+                params: req.params
+            }
+        }).catch(console.error);
+    }
+
     res.status(err.status || 500).json({
         success: false,
         error: err.message || 'Server Error'
