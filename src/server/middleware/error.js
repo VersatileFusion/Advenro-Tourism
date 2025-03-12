@@ -1,6 +1,23 @@
 const errorHandler = (err, req, res, next) => {
-    console.error(err.stack);
+    console.error('❌ Error:', err.stack);
 
+    // Check if the request accepts HTML
+    const acceptsHtml = req.accepts('html');
+
+    // Handle HTML requests differently
+    if (acceptsHtml) {
+        // Determine status code
+        const statusCode = err.status || 500;
+        
+        // Serve appropriate error page
+        if (statusCode === 404) {
+            return res.status(404).sendFile('404.html', { root: './public' });
+        } else {
+            return res.status(500).sendFile('500.html', { root: './public' });
+        }
+    }
+
+    // For API requests, return JSON responses
     // Mongoose validation error
     if (err.name === 'ValidationError') {
         return res.status(400).json({

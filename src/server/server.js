@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const morgan = require('morgan');
 const mongoose = require('mongoose');
 const path = require('path');
+const compression = require('compression');
 require('dotenv').config();
 
 // Import routes
@@ -15,25 +16,47 @@ const reviewRoutes = require('./routes/review.routes');
 const destinationRoutes = require('./routes/destination.routes');
 const newsletterRoutes = require('./routes/newsletter.routes');
 const contactRoutes = require('./routes/contact.routes');
+const docsRoutes = require('./routes/docs.routes');
 
 // Create Express app
 const app = express();
 
 // Middleware
-app.use(helmet());
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            ...helmet.contentSecurityPolicy.getDefaultDirectives(),
+            "img-src": ["'self'", "data:", "https:"],
+            "script-src": ["'self'", "'unsafe-inline'", "https://cdn.jsdelivr.net"]
+        }
+    }
+}));
 app.use(cors());
 app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use(compression());
 
-// Database connection
+// Database connection with optimized pooling
 mongoose.connect(process.env.MONGODB_URI, {
     useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-.then(() => console.log('Connected to MongoDB'))
-.catch(err => console.error('MongoDB connection error:', err));
+    useUnifiedTopology: true,
+    maxPoolSize: 100,
+    minPoolSize: 10,
+    socketTimeoutMS: 45000,
+    connectTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 5000,
+    heartbeatFrequencyMS: 10000,
+    retryWrites: true,
+    w: 'majority'
+});
+
+const db = mongoose.connection;
+db.on('error', console.error.bind(console, 'MongoDB connection error:'));
+db.once('open', () => {
+    console.log('Connected to MongoDB with optimized pooling');
+});
 
 // Routes
 app.use('/api/v1/auth', authRoutes);
@@ -44,6 +67,12 @@ app.use('/api/v1/reviews', reviewRoutes);
 app.use('/api/v1/destinations', destinationRoutes);
 app.use('/api/v1/newsletter', newsletterRoutes);
 app.use('/api/v1/contact', contactRoutes);
+app.use('/api/v1/docs', docsRoutes);
+
+// Serve API documentation at root
+app.get('/', (req, res) => {
+    res.redirect('/api/v1/docs/api-docs');
+});
 
 // Error handling middleware
 app.use((err, req, res, next) => {
@@ -59,4 +88,5 @@ app.use((err, req, res, next) => {
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
+    console.log(`API Documentation available at http://localhost:${PORT}/api/v1/docs/api-docs`);
 }); 

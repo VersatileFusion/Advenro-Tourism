@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function checkAuth() {
     const token = localStorage.getItem('authToken');
     if (!token) {
-        window.location.href = 'login.html';
+        window.location.href = 'signin.html';
     }
 }
 
@@ -408,7 +408,7 @@ async function handleAccountDeletion() {
 
         if (response.ok) {
             localStorage.removeItem('authToken');
-            window.location.href = 'login.html';
+            window.location.href = 'signin.html';
         } else {
             throw new Error('Failed to delete account');
         }
@@ -457,7 +457,7 @@ function handleAvatarChange() {
 // Handle Logout
 function handleLogout() {
     localStorage.removeItem('authToken');
-    window.location.href = 'login.html';
+    window.location.href = 'signin.html';
 }
 
 // Helper Functions

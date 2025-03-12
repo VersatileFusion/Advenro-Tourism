@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Offline Support</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .offline-indicator {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .offline-indicator.hidden {
+            transform: translateY(150%);
+        }
+
+        .cached-content {
+            opacity: 0.7;
+        }
+
+        .sync-required {
+            border-left: 4px solid #ffc107;
+            padding-left: 1rem;
+        }
+    </style>
+</head>
+<body>
+    <!-- Offline indicator -->
+    <div class="offline-indicator hidden" id="offlineIndicator">
+        <div class="alert alert-warning" role="alert">
+            <i class="bi bi-wifi-off"></i> You are currently offline
+        </div>
+    </div>
+
+    <!-- Content container -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+                <h1>Offline-First Application</h1>
+                
+                <!-- Network status -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Network Status</h5>
+                        <p class="card-text" id="networkStatus">Checking connection...</p>
+                    </div>
+                </div>
+
+                <!-- Cached content example -->
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <h5 class="card-title">Cached Content</h5>
+                        <div id="cachedContent">
+                            Loading content...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action buttons -->
+                <div class="mb-4">
+                    <button class="btn btn-primary" onclick="fetchData()">
+                        Fetch Data
+                    </button>
+                    <button class="btn btn-success" onclick="syncData()">
+                        Sync Pending Changes
+                    </button>
+                </div>
+
+                <!-- Pending actions list -->
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title">Pending Actions</h5>
+                        <ul class="list-group" id="pendingActions"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Offline support manager
+        const OfflineManager = {
+            isOnline: navigator.onLine,
+            pendingActions: [],
+            
+            init() {
+                // Listen for online/offline events
+                window.addEventListener('online', () => this.handleConnectionChange(true));
+                window.addEventListener('offline', () => this.handleConnectionChange(false));
+                
+                // Initialize network status
+                this.updateNetworkStatus();
+                
+                // Initialize service worker if supported
+                if ('serviceWorker' in navigator) {
+                    this.registerServiceWorker();
+                }
+            },
+            
+            handleConnectionChange(online) {
+                this.isOnline = online;
+                this.updateNetworkStatus();
+                this.toggleOfflineIndicator(!online);
+                
+                if (online) {
+                    this.syncPendingActions();
+                }
+            },
+            
+            updateNetworkStatus() {
+                const statusEl = document.getElementById('networkStatus');
+                statusEl.textContent = this.isOnline ? 'Connected' : 'Offline';
+                statusEl.className = this.isOnline ? 'text-success' : 'text-danger';
+            },
+            
+            toggleOfflineIndicator(show) {
+                const indicator = document.getElementById('offlineIndicator');
+                indicator.classList.toggle('hidden', !show);
+            },
+            
+            async registerServiceWorker() {
+                try {
+                    const registration = await navigator.serviceWorker.register('/service-worker.js');
+                    console.log('ServiceWorker registered:', registration);
+                } catch (error) {
+                    console.error('ServiceWorker registration failed:', error);
+                }
+            },
+            
+            addPendingAction(action) {
+                this.pendingActions.push({
+                    id: Date.now(),
+                    action,
+                    timestamp: new Date().toISOString()
+                });
+                this.updatePendingActionsList();
+                this.savePendingActions();
+            },
+            
+            updatePendingActionsList() {
+                const listEl = document.getElementById('pendingActions');
+                listEl.innerHTML = this.pendingActions.map(item => `
+                    <li class="list-group-item sync-required">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <strong>${item.action}</strong>
+                                <br>
+                                <small class="text-muted">${new Date(item.timestamp).toLocaleString()}</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-danger" 
+                                    onclick="OfflineManager.removePendingAction(${item.id})">
+                                Remove
+                            </button>
+                        </div>
+                    </li>
+                `).join('');
+            },
+            
+            removePendingAction(id) {
+                this.pendingActions = this.pendingActions.filter(item => item.id !== id);
+                this.updatePendingActionsList();
+                this.savePendingActions();
+            },
+            
+            savePendingActions() {
+                localStorage.setItem('pendingActions', JSON.stringify(this.pendingActions));
+            },
+            
+            loadPendingActions() {
+                const saved = localStorage.getItem('pendingActions');
+                if (saved) {
+                    this.pendingActions = JSON.parse(saved);
+                    this.updatePendingActionsList();
+                }
+            },
+            
+            async syncPendingActions() {
+                if (!this.isOnline) return;
+                
+                for (const action of this.pendingActions) {
+                    try {
+                        // Simulate syncing action to server
+                        await new Promise(resolve => setTimeout(resolve, 1000));
+                        this.removePendingAction(action.id);
+                    } catch (error) {
+                        console.error('Failed to sync action:', error);
+                    }
+                }
+            }
+        };
+
+        // Initialize offline support
+        OfflineManager.init();
+        OfflineManager.loadPendingActions();
+
+        // Example functions for demo
+        async function fetchData() {
+            try {
+                const contentEl = document.getElementById('cachedContent');
+                
+                if (!OfflineManager.isOnline) {
+                    // Load from cache
+                    const cached = localStorage.getItem('cachedData');
+                    if (cached) {
+                        contentEl.innerHTML = `
+                            <div class="cached-content">
+                                <p>${cached}</p>
+                                <small class="text-muted">Loaded from cache</small>
+                            </div>
+                        `;
+                        return;
+                    }
+                }
+                
+                // Simulate API call
+                const data = await new Promise(resolve => 
+                    setTimeout(() => resolve('Fresh data from server'), 1000)
+                );
+                
+                // Save to cache
+                localStorage.setItem('cachedData', data);
+                
+                contentEl.innerHTML = `<p>${data}</p>`;
+            } catch (error) {
+                console.error('Failed to fetch data:', error);
+            }
+        }
+
+        function syncData() {
+            OfflineManager.syncPendingActions();
+        }
+
+        // Example of adding offline action
+        function addOfflineAction(action) {
+            OfflineManager.addPendingAction(action);
+        }
+    </script>
+</body>
+</html> 

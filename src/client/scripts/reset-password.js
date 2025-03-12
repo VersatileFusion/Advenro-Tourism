@@ -110,7 +110,7 @@ async function handleResetPassword(e) {
         if (response.ok) {
             showAlert('Password has been reset successfully! Redirecting to login...', 'success');
             setTimeout(() => {
-                window.location.href = 'login.html';
+                window.location.href = 'signin.html';
             }, 2000);
         } else {
             throw new Error(data.message || 'Failed to reset password. Please try again.');
