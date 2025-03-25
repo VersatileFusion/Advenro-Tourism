@@ -111,9 +111,73 @@ exports.getMe = async (req, res) => {
     }
 };
 
-// Get token from model, create cookie and send response
+// @desc    Protect routes
+// @middleware
+exports.protect = async (req, res, next) => {
+    try {
+        console.log('🔒 Protecting route - checking authentication...');
+        let token;
+
+        // Check if auth header exists and starts with Bearer
+        if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+            token = req.headers.authorization.split(' ')[1];
+        } else if (req.cookies.token) {
+            token = req.cookies.token;
+        }
+
+        if (!token) {
+            console.log('❌ No token provided');
+            return res.status(401).json({
+                success: false,
+                error: 'Not authorized to access this route'
+            });
+        }
+
+        try {
+            // Verify token
+            console.log('🔍 Verifying JWT token...');
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+            
+            // Add user to request
+            console.log(`✅ Token verified for user: ${decoded.id}`);
+            req.user = await User.findById(decoded.id);
+            next();
+        } catch (error) {
+            console.error('❌ Token verification failed:', error);
+            return res.status(401).json({
+                success: false,
+                error: 'Not authorized to access this route'
+            });
+        }
+    } catch (error) {
+        console.error('❌ Authentication error:', error);
+        res.status(500).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+};
+
+// @desc    Restrict to certain roles
+// @middleware
+exports.restrictTo = (...roles) => {
+    return (req, res, next) => {
+        console.log(`🔒 Checking role permission. User role: ${req.user.role}, Required roles: ${roles.join(', ')}`);
+        if (!roles.includes(req.user.role)) {
+            console.log('❌ User does not have required role');
+            return res.status(403).json({
+                success: false,
+                error: 'Not authorized to perform this action'
+            });
+        }
+        console.log('✅ Role permission granted');
+        next();
+    };
+};
+
+// Helper function to send token response
 const sendTokenResponse = (user, statusCode, res) => {
-    console.log('🎟️ Generating JWT token...');
+    console.log('🔑 Generating JWT token...');
     // Create token
     const token = user.getSignedJwtToken();
 

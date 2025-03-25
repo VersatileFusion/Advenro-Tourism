@@ -8,7 +8,7 @@ const { sendEmail } = require('../utils/email');
 // Register new user
 exports.register = async (req, res) => {
     try {
-        const { name, email, password } = req.body;
+        const { firstName, lastName, email, password, subscribeNewsletter } = req.body;
 
         // Check if user already exists
         let user = await User.findOne({ email });
@@ -21,9 +21,11 @@ exports.register = async (req, res) => {
 
         // Create new user
         user = new User({
-            name,
+            firstName,
+            lastName,
             email,
-            password
+            password,
+            subscribeNewsletter
         });
 
         // Save user to database
@@ -41,9 +43,11 @@ exports.register = async (req, res) => {
             token,
             user: {
                 id: user._id,
-                name: user.name,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                subscribeNewsletter: user.subscribeNewsletter
             }
         });
     } catch (error) {
@@ -70,7 +74,7 @@ exports.login = async (req, res) => {
         }
 
         // Check password
-        const isMatch = await user.matchPassword(password);
+        const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
@@ -90,9 +94,11 @@ exports.login = async (req, res) => {
             token,
             user: {
                 id: user._id,
-                name: user.name,
+                firstName: user.firstName,
+                lastName: user.lastName,
                 email: user.email,
-                role: user.role
+                role: user.role,
+                subscribeNewsletter: user.subscribeNewsletter
             }
         });
     } catch (error) {

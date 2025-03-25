@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Loading Spinner</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .fullscreen-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .loader-container {
+            text-align: center;
+        }
+
+        .loader-text {
+            margin-top: 1rem;
+            color: #6c757d;
+        }
+
+        /* Hide loader by default */
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <!-- Button with loading state -->
+    <button class="btn btn-primary" id="loadingButton" onclick="simulateLoading()">
+        <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+        <span class="button-text">Click Me</span>
+    </button>
+
+    <!-- Fullscreen loader -->
+    <div class="fullscreen-loader hidden" id="fullscreenLoader">
+        <div class="loader-container">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="loader-text">Please wait...</p>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Loading Button functionality
+        function setButtonLoading(button, isLoading) {
+            const spinner = button.querySelector('.spinner-border');
+            const text = button.querySelector('.button-text');
+            
+            button.disabled = isLoading;
+            spinner.classList.toggle('d-none', !isLoading);
+            text.textContent = isLoading ? 'Loading...' : 'Click Me';
+        }
+
+        // Fullscreen loader functionality
+        function showFullscreenLoader() {
+            document.getElementById('fullscreenLoader').classList.remove('hidden');
+        }
+
+        function hideFullscreenLoader() {
+            document.getElementById('fullscreenLoader').classList.add('hidden');
+        }
+
+        // Example usage
+        function simulateLoading() {
+            const button = document.getElementById('loadingButton');
+            setButtonLoading(button, true);
+            showFullscreenLoader();
+
+            // Simulate async operation
+            setTimeout(() => {
+                setButtonLoading(button, false);
+                hideFullscreenLoader();
+            }, 2000);
+        }
+
+        // Global loading state management
+        const LoadingManager = {
+            activeLoaders: 0,
+
+            show() {
+                this.activeLoaders++;
+                if (this.activeLoaders === 1) {
+                    showFullscreenLoader();
+                }
+            },
+
+            hide() {
+                this.activeLoaders = Math.max(0, this.activeLoaders - 1);
+                if (this.activeLoaders === 0) {
+                    hideFullscreenLoader();
+                }
+            }
+        };
+
+        // Example of using the loading manager with fetch
+        async function fetchWithLoading(url) {
+            try {
+                LoadingManager.show();
+                const response = await fetch(url);
+                const data = await response.json();
+                return data;
+            } finally {
+                LoadingManager.hide();
+            }
+        }
+    </script>
+</body>
+</html> 

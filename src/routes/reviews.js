@@ -1,22 +1,19 @@
 const express = require('express');
-const router = express.Router({ mergeParams: true }); // To allow nested routes
-const { authenticate, authorize } = require('../middleware/auth');
-const { reviewValidation } = require('../middleware/validator');
-const {
-    getReviews,
-    getReview,
-    createReview,
-    updateReview,
-    deleteReview
-} = require('../controllers/reviewController');
+const reviewsController = require('../controllers/reviews');
+const auth = require('../middleware/auth');
+
+const router = express.Router({ mergeParams: true });
 
 // Public routes
-router.get('/', getReviews);
-router.get('/:id', getReview);
+router.get('/', reviewsController.getAllReviews);
+router.get('/:id', reviewsController.getReview);
 
 // Protected routes
-router.post('/', authenticate, authorize('user'), reviewValidation, createReview);
-router.put('/:id', authenticate, authorize('user', 'admin'), reviewValidation, updateReview);
-router.delete('/:id', authenticate, authorize('user', 'admin'), deleteReview);
+router.use(auth);
+router.post('/', reviewsController.createReview);
+router.patch('/:id', reviewsController.updateReview);
+router.delete('/:id', reviewsController.deleteReview);
+router.post('/:id/like', reviewsController.likeReview);
+router.post('/:id/helpful', reviewsController.markHelpful);
 
 module.exports = router; 

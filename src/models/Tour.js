@@ -54,92 +54,160 @@ const mongoose = require('mongoose');
 const tourSchema = new mongoose.Schema({
     name: {
         type: String,
-        required: [true, 'Please add a tour name'],
-        unique: true,
-        trim: true,
-        maxlength: [100, 'Name cannot be more than 100 characters']
+        required: true,
+        trim: true
     },
     description: {
         type: String,
-        required: [true, 'Please add a description'],
-        maxlength: [2000, 'Description cannot be more than 2000 characters']
+        required: true
     },
-    price: {
-        type: Number,
-        required: [true, 'Please add a price']
+    image: {
+        type: String,
+        required: true
+    },
+    images: [{
+        type: String
+    }],
+    destination: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Destination',
+        required: true
     },
     duration: {
         type: Number,
-        required: [true, 'Please add tour duration']
+        required: true
     },
     maxGroupSize: {
         type: Number,
-        required: [true, 'Please add group size']
+        required: true
     },
     difficulty: {
         type: String,
-        enum: {
-            values: ['easy', 'medium', 'difficult'],
-            message: 'Difficulty must be either: easy, medium, difficult'
-        },
-        default: 'medium'
+        enum: ['easy', 'moderate', 'difficult'],
+        required: true
     },
-    rating: {
+    price: {
         type: Number,
-        min: [0, 'Rating must be at least 0'],
-        max: [5, 'Rating cannot be more than 5'],
+        required: true
+    },
+    priceDiscount: {
+        type: Number,
         default: 0
     },
-    locations: [{
-        name: {
+    summary: {
+        type: String,
+        required: true
+    },
+    tourType: {
+        type: String,
+        enum: ['guided', 'self-guided', 'private', 'group'],
+        required: true
+    },
+    activities: [{
+        type: String,
+        enum: ['hiking', 'cultural', 'adventure', 'relaxation']
+    }],
+    features: [{
+        type: String
+    }],
+    itinerary: [{
+        day: {
+            type: Number,
+            required: true
+        },
+        title: {
             type: String,
-            required: [true, 'Location name is required']
+            required: true
         },
-        coordinates: {
-            type: [Number],
-            required: [true, 'Coordinates are required'],
-            index: '2dsphere'
+        description: {
+            type: String,
+            required: true
+        }
+    }],
+    startDates: [{
+        date: {
+            type: Date,
+            required: true
         },
+        participants: {
+            type: Number,
+            default: 0
+        }
+    }],
+    ratingsAverage: {
+        type: Number,
+        default: 0,
+        min: [0, 'Rating must be above 0'],
+        max: [5, 'Rating must be below 5'],
+        set: val => Math.round(val * 10) / 10
+    },
+    ratingsQuantity: {
+        type: Number,
+        default: 0
+    },
+    reviews: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Review'
+    }],
+    guides: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Guide'
+    }],
+    locations: [{
+        type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+        },
+        coordinates: [Number],
+        address: String,
         description: String,
         day: Number
     }],
-    startDates: [Date],
-    images: {
-        type: [String],
-        default: ['default-tour.jpg']
-    },
-    included: {
-        type: [String],
-        default: []
-    },
-    excluded: {
-        type: [String],
-        default: []
-    },
-    highlights: {
-        type: [String],
-        default: []
-    },
     createdAt: {
         type: Date,
         default: Date.now
     },
-    active: {
-        type: Boolean,
-        default: true
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
 });
 
-// Create indexes for common queries
-tourSchema.index({ price: 1, rating: -1 });
-tourSchema.index({ 'locations.coordinates': '2dsphere' });
-tourSchema.index({ startDates: 1 });
+// Update the updatedAt timestamp before saving
+tourSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
+    next();
+});
 
-// Virtual populate with reviews
+// Indexes for better query performance
+tourSchema.index({ price: 1, ratingsAverage: -1 });
+tourSchema.index({ slug: 1 });
+tourSchema.index({ startLocation: '2dsphere' });
+
+// Virtual populate reviews
 tourSchema.virtual('reviews', {
     ref: 'Review',
     foreignField: 'tour',
     localField: '_id'
 });
 
-module.exports = { schema: tourSchema }; 
+// Virtual property for discounted price
+tourSchema.virtual('discountedPrice').get(function() {
+    return this.price * (1 - this.priceDiscount / 100);
+});
+
+// Document middleware to run before .save() and .create()
+tourSchema.pre('save', function(next) {
+    // Update ratings average
+    if (this.reviews && this.reviews.length > 0) {
+        const ratings = this.reviews.map(review => review.rating);
+        this.ratingsAverage = ratings.reduce((acc, curr) => acc + curr, 0) / ratings.length;
+        this.ratingsQuantity = ratings.length;
+    }
+    next();
+});
+
+const Tour = mongoose.model('Tour', tourSchema);
+
+module.exports = Tour; 

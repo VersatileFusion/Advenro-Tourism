@@ -8,6 +8,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="css/screens.css">
     <link rel="stylesheet" href="css/navbar.css">
+    <!-- Add Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
 </head>
 <body>
     <!-- Search Section -->
@@ -78,7 +80,7 @@
     <!-- Main Categories -->
     <div class="categories-grid">
         <div class="category-box" onclick="window.location.href='tours-activities.html'" data-drawer="tours-activities">
-            <img src="icons/mytrip-icon.png" alt="Tour & Activities" class="category-icon">
+            <img src="icons/tour&activities-icon.png" alt="Tour & Activities" class="category-icon">
             <span class="category-name">Tour & Activities</span>
         </div>
         <div class="category-box" onclick="window.location.href='food-drinks.html'" data-drawer="food-drinks">
@@ -105,30 +107,56 @@
 
     <!-- Category Tags -->
     <div class="category-tags">
-        <div class="container">
-            <div class="category-tag">
-                <i class="fas fa-basketball-ball"></i>
-                <span>Sports</span>
-            </div>
-            <div class="category-tag">
-                <i class="fas fa-utensils"></i>
-                <span>Food</span>
-            </div>
-            <div class="category-tag">
-                <i class="fas fa-palette"></i>
-                <span>Artistic</span>
-            </div>
-            <div class="category-tag">
-                <i class="fas fa-ghost"></i>
-                <span>Horror</span>
-            </div>
-            <div class="category-tag">
-                <i class="fas fa-magic"></i>
-                <span>Fantasy</span>
-            </div>
-            <div class="category-tag">
-                <i class="fas fa-hiking"></i>
-                <span>Adventure</span>
+        <div class="swiper category-swiper">
+            <div class="swiper-wrapper">
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/sports-icon.png" alt="Sports">
+                        </div>
+                        <span>Sports</span>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/Culinary.png" alt="Food">
+                        </div>
+                        <span>Food</span>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/Group-3.png" alt="Artistic">
+                        </div>
+                        <span>Artistic</span>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/Group-4.png" alt="Horror">
+                        </div>
+                        <span>Horror</span>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/Group-5.png" alt="Fantasy">
+                        </div>
+                        <span>Fantasy</span>
+                    </div>
+                </div>
+                <div class="swiper-slide">
+                    <div class="category-tag">
+                        <div class="category-icon">
+                            <img src="icons/Adventure.png" alt="Adventure">
+                        </div>
+                        <span>Adventure</span>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -241,29 +269,22 @@
                 <span>Home</span>
             </a>
             <a href="local-services.html" class="nav-btn auth-required">
-                <i class="fas fa-store"></i>
+                <i class="fas fa-map-marker-alt"></i>
                 <span>Local Services</span>
             </a>
             <a href="my-trip.html" class="nav-btn">
                 <i class="fas fa-suitcase"></i>
                 <span>My Trip</span>
             </a>
-            <a href="ticket.html" class="nav-btn">
-                <i class="fas fa-ticket-alt"></i>
-                <span>Ticket</span>
-            </a>
-            <a href="profile.html" class="nav-btn auth-required">
+            <a href="profile.html" class="nav-btn">
                 <i class="fas fa-user"></i>
                 <span>Profile</span>
-            </a>
-            <a href="#" class="nav-btn auth-not-required" id="authButton">
-                <i class="fas fa-user-circle"></i>
-                <span>Account</span>
             </a>
         </div>
     </nav>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
     <script src="js/screens.js"></script>
     <script>
     document.addEventListener('DOMContentLoaded', function() {

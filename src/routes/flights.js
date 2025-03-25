@@ -6,7 +6,10 @@ const {
     createFlight,
     updateFlight,
     deleteFlight,
-    searchFlights
+    searchFlights,
+    searchAirports,
+    bookFlight,
+    getUserBookings
 } = require('../controllers/flightController');
 
 const { authenticate, authorize } = require('../middleware/auth');
@@ -237,5 +240,14 @@ router.put('/:id', authenticate, authorize('admin'), flightValidation, updateFli
  *         description: Flight not found
  */
 router.delete('/:id', authenticate, authorize('admin'), deleteFlight);
+
+// Public routes
+router.get('/airports/search', searchAirports);
+router.post('/search', searchFlights);
+router.get('/:id', getFlight);
+
+// Protected routes (require authentication)
+router.post('/book', authenticate, bookFlight);
+router.get('/bookings/user', authenticate, getUserBookings);
 
 module.exports = router; 

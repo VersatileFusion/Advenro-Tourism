@@ -4,6 +4,7 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('../config/swagger');
 const fs = require('fs');
 const path = require('path');
+const { auth } = require('../middleware/auth');
 
 // Serve Swagger documentation UI
 router.use('/api-docs', swaggerUi.serve);
@@ -171,5 +172,95 @@ function generateSampleFromSchema(schema) {
         }
     }
 }
+
+// API Reference documentation
+router.get('/api', auth, async (req, res) => {
+  try {
+    const apiDocs = [
+      {
+        title: 'Authentication',
+        description: 'Endpoints for user authentication and authorization',
+        endpoints: [
+          { method: 'POST', path: '/api/auth/login', description: 'User login' },
+          { method: 'POST', path: '/api/auth/register', description: 'User registration' },
+          { method: 'POST', path: '/api/auth/logout', description: 'User logout' }
+        ]
+      },
+      {
+        title: 'Hotels',
+        description: 'Hotel booking and management endpoints',
+        endpoints: [
+          { method: 'GET', path: '/api/hotels', description: 'Get all hotels' },
+          { method: 'GET', path: '/api/hotels/:id', description: 'Get hotel details' },
+          { method: 'POST', path: '/api/hotels/book', description: 'Book a hotel' }
+        ]
+      },
+      {
+        title: 'Flights',
+        description: 'Flight booking and management endpoints',
+        endpoints: [
+          { method: 'GET', path: '/api/flights', description: 'Get all flights' },
+          { method: 'GET', path: '/api/flights/:id', description: 'Get flight details' },
+          { method: 'POST', path: '/api/flights/book', description: 'Book a flight' }
+        ]
+      }
+    ];
+    res.json(apiDocs);
+  } catch (error) {
+    console.error('Error fetching API documentation:', error);
+    res.status(500).json({ message: 'Error fetching API documentation' });
+  }
+});
+
+// User Guides
+router.get('/guides', auth, async (req, res) => {
+  try {
+    const guides = [
+      {
+        title: 'Getting Started',
+        description: 'Learn how to use the platform for the first time',
+        content: 'Step-by-step guide for new users'
+      },
+      {
+        title: 'Booking Process',
+        description: 'How to book hotels, flights, and other services',
+        content: 'Detailed guide for making bookings'
+      },
+      {
+        title: 'Account Management',
+        description: 'Managing your account and preferences',
+        content: 'Guide for account settings and profile management'
+      }
+    ];
+    res.json(guides);
+  } catch (error) {
+    console.error('Error fetching guides:', error);
+    res.status(500).json({ message: 'Error fetching guides' });
+  }
+});
+
+// FAQ
+router.get('/faq', auth, async (req, res) => {
+  try {
+    const faq = [
+      {
+        question: 'How do I make a booking?',
+        answer: 'To make a booking, navigate to the desired service (hotel, flight, etc.), select your preferences, and follow the booking wizard.'
+      },
+      {
+        question: 'What payment methods are accepted?',
+        answer: 'We accept all major credit cards, PayPal, and bank transfers.'
+      },
+      {
+        question: 'How can I cancel my booking?',
+        answer: 'You can cancel your booking through the "My Bookings" section of your account. Cancellation policies vary by service type.'
+      }
+    ];
+    res.json(faq);
+  } catch (error) {
+    console.error('Error fetching FAQ:', error);
+    res.status(500).json({ message: 'Error fetching FAQ' });
+  }
+});
 
 module.exports = router; 

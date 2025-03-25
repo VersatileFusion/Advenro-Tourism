@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "data": {
+    "id": "123456",
+    "name": "Mock Hotel London",
+    "description": "A luxury hotel in the heart of London",
+    "location": {
+      "city": "London",
+      "country": "United Kingdom",
+      "address": "123 London Road",
+      "latitude": 51.5074,
+      "longitude": 0.1278
+    },
+    "price": 150,
+    "currency": "USD",
+    "rating": 8.7,
+    "stars": 4,
+    "images": [
+      "https://example.com/hotel1.jpg",
+      "https://example.com/hotel2.jpg"
+    ],
+    "amenities": [
+      "WiFi",
+      "Pool",
+      "Spa",
+      "Restaurant"
+    ],
+    "rooms": [
+      {
+        "id": "room1",
+        "name": "Deluxe Room",
+        "description": "Spacious room with city view",
+        "price": 150,
+        "capacity": 2,
+        "amenities": [
+          "TV",
+          "Safe",
+          "Minibar"
+        ]
+      },
+      {
+        "id": "room2",
+        "name": "Suite",
+        "description": "Luxury suite with separate living area",
+        "price": 250,
+        "capacity": 4,
+        "amenities": [
+          "TV",
+          "Safe",
+          "Minibar",
+          "Jacuzzi"
+        ]
+      }
+    ],
+    "reviews": [
+      {
+        "id": "review1",
+        "rating": 9,
+        "title": "Excellent stay",
+        "comment": "We had a wonderful time at this hotel.",
+        "date": "2023-12-15",
+        "reviewer": {
+          "name": "John D.",
+          "country": "United States"
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tour Search</title>
+    <link rel="stylesheet" href="/css/tours.css">
+</head>
+<body>
+    <div class="tour-search-container">
+        <div class="search-form">
+            <div class="form-group">
+                <label for="destination">Destination</label>
+                <input type="text" id="destination" placeholder="Where do you want to go?" autocomplete="off">
+                <div class="destination-suggestions" id="destinationSuggestions"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="startDate">Start Date</label>
+                <input type="date" id="startDate" min="">
+            </div>
+
+            <div class="form-group">
+                <label for="duration">Duration</label>
+                <select id="duration">
+                    <option value="">Any Duration</option>
+                    <option value="1-3">1-3 days</option>
+                    <option value="4-7">4-7 days</option>
+                    <option value="8-14">8-14 days</option>
+                    <option value="15+">15+ days</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="guests">Guests</label>
+                <div class="guests-input">
+                    <button type="button" class="guest-btn" data-action="decrease">-</button>
+                    <input type="number" id="guests" value="1" min="1" max="10">
+                    <button type="button" class="guest-btn" data-action="increase">+</button>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="priceRange">Price Range</label>
+                <select id="priceRange">
+                    <option value="">Any Price</option>
+                    <option value="budget">Budget ($0-$1000)</option>
+                    <option value="moderate">Moderate ($1000-$3000)</option>
+                    <option value="luxury">Luxury ($3000+)</option>
+                </select>
+            </div>
+
+            <button id="searchTours" class="search-button">Search Tours</button>
+        </div>
+
+        <div class="filters">
+            <div class="filter-group">
+                <label>Tour Type</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" value="guided"> Guided Tours</label>
+                    <label><input type="checkbox" value="self-guided"> Self-Guided</label>
+                    <label><input type="checkbox" value="private"> Private Tours</label>
+                    <label><input type="checkbox" value="group"> Group Tours</label>
+                </div>
+            </div>
+
+            <div class="filter-group">
+                <label>Activities</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" value="hiking"> Hiking</label>
+                    <label><input type="checkbox" value="cultural"> Cultural</label>
+                    <label><input type="checkbox" value="adventure"> Adventure</label>
+                    <label><input type="checkbox" value="relaxation"> Relaxation</label>
+                </div>
+            </div>
+        </div>
+
+        <div class="search-results" id="tourResults">
+            <!-- Results will be populated here -->
+        </div>
+
+        <div class="loading-spinner" id="loadingSpinner">
+            <div class="spinner"></div>
+            <p>Searching for tours...</p>
+        </div>
+    </div>
+
+    <script src="/js/tours.js"></script>
+</body>
+</html> 

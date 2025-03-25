@@ -1,0 +1,23 @@
+{
+  "success": true,
+  "data": [
+    {
+      "dest_id": "London",
+      "name": "London",
+      "country": "United Kingdom",
+      "type": "city"
+    },
+    {
+      "dest_id": "Paris",
+      "name": "Paris",
+      "country": "France",
+      "type": "city"
+    },
+    {
+      "dest_id": "NewYork",
+      "name": "New York",
+      "country": "United States",
+      "type": "city"
+    }
+  ]
+}

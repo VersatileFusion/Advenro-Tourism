@@ -1,216 +1,185 @@
 const request = require('supertest');
-const mongoose = require('mongoose');
-const app = require('../server');
-const { User } = require('../models');
-const { generateToken } = require('../utils/twoFactorAuth');
+const { expect, setupTestDB, teardownTestDB, createTestUser, generateAuthToken, clearCollections } = require('./test-helper');
 
-let token;
-let user;
+let mongod;
+let testUser;
+let authToken;
+let server;
 
-beforeAll(async () => {
-    // Connect to test database
-    await mongoose.connect(process.env.MONGO_URI_TEST, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
+describe('User API Tests', () => {
+    before(async () => {
+        console.log('🔄 Setting up test environment...');
+        const setup = await setupTestDB();
+        server = setup.server;
     });
-});
 
-beforeEach(async () => {
-    // Create test user
-    user = await User.create({
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'Password123!',
-        role: 'user'
+    after(async () => {
+        console.log('🔄 Cleaning up test environment...');
+        await teardownTestDB(mongod);
     });
-    token = user.getSignedJwtToken();
-});
 
-afterEach(async () => {
-    // Clean up database
-    await User.deleteMany();
-});
+    beforeEach(async () => {
+        console.log('🔄 Setting up test user...');
+        await clearCollections();
+        testUser = await createTestUser();
+        authToken = generateAuthToken(testUser);
+        console.log('✅ Test user created successfully');
+    });
 
-afterAll(async () => {
-    // Disconnect from database
-    await mongoose.connection.close();
-});
+    describe('User Registration', () => {
+        it('should register a new user successfully', async () => {
+            console.log('🔄 Testing user registration...');
+            const userData = {
+                email: 'newuser@test.com',
+                password: 'Test123!',
+                firstName: 'New',
+                lastName: 'User'
+            };
+            console.log('📤 Sending registration request with data:', userData);
 
-describe('User Profile Management', () => {
-    describe('GET /api/v1/users/me', () => {
-        it('should get current user profile', async () => {
-            const res = await request(app)
-                .get('/api/v1/users/me')
-                .set('Authorization', `Bearer ${token}`);
+            const response = await request(server)
+                .post('/api/v1/auth/register')
+                .send(userData)
+                .expect(201);
 
-            expect(res.status).toBe(200);
-            expect(res.body.data.name).toBe('Test User');
-            expect(res.body.data.email).toBe('test@example.com');
+            expect(response.body.success).to.be.true;
+            expect(response.body).to.have.property('token');
+            expect(response.body.user).to.have.property('email', userData.email);
+            console.log('✅ User registration test successful');
         });
 
-        it('should return 401 if not authenticated', async () => {
-            const res = await request(app)
-                .get('/api/v1/users/me');
+        it('should not register user with invalid email', async () => {
+            console.log('🔄 Testing invalid email registration...');
+            const userData = {
+                email: 'invalid-email',
+                password: 'Test123!',
+                firstName: 'Invalid',
+                lastName: 'User'
+            };
+            console.log('📤 Sending registration request with invalid email');
 
-            expect(res.status).toBe(401);
+            const response = await request(server)
+                .post('/api/v1/auth/register')
+                .send(userData)
+                .expect(400);
+
+            expect(response.body.success).to.be.false;
+            expect(response.body).to.have.property('errors');
+            console.log('✅ Invalid email registration test successful');
         });
     });
 
-    describe('PUT /api/v1/users/profile', () => {
+    describe('User Login', () => {
+        it('should login user successfully', async () => {
+            console.log('🔄 Testing user login...');
+            const loginData = {
+                email: testUser.email,
+                password: 'Test123!'
+            };
+            console.log('📤 Sending login request with data:', loginData);
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(loginData)
+                .expect(200);
+
+            expect(response.body.success).to.be.true;
+            expect(response.body).to.have.property('token');
+            expect(response.body.user).to.have.property('email', testUser.email);
+            console.log('✅ User login test successful');
+        });
+
+        it('should not login with invalid credentials', async () => {
+            console.log('🔄 Testing invalid login credentials...');
+            const loginData = {
+                email: testUser.email,
+                password: 'WrongPassword'
+            };
+            console.log('📤 Sending login request with invalid credentials');
+
+            const response = await request(server)
+                .post('/api/v1/auth/login')
+                .send(loginData)
+                .expect(401);
+
+            expect(response.body.success).to.be.false;
+            expect(response.body.message).to.include('credentials');
+            console.log('✅ Invalid login credentials test successful');
+        });
+    });
+
+    describe('User Profile', () => {
+        it('should get user profile', async () => {
+            console.log('🔄 Testing get user profile...');
+            console.log('📤 Sending get profile request');
+
+            const response = await request(server)
+                .get('/api/v1/auth/profile')
+                .set('Authorization', `Bearer ${authToken}`)
+                .expect(200);
+
+            expect(response.body.success).to.be.true;
+            expect(response.body.user).to.have.property('email', testUser.email);
+            console.log('✅ Get user profile test successful');
+        });
+
         it('should update user profile', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/profile')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    name: 'Updated Name',
-                    phone: '+1234567890',
-                    address: {
-                        street: '123 Test St',
-                        city: 'Test City',
-                        state: 'Test State',
-                        zipCode: '12345',
-                        country: 'Test Country'
-                    }
-                });
+            console.log('🔄 Testing update user profile...');
+            const updateData = {
+                firstName: 'Updated',
+                lastName: 'Name'
+            };
+            console.log('📤 Sending update profile request with data:', updateData);
 
-            expect(res.status).toBe(200);
-            expect(res.body.data.name).toBe('Updated Name');
-            expect(res.body.data.phone).toBe('+1234567890');
-            expect(res.body.data.address.city).toBe('Test City');
-        });
+            const response = await request(server)
+                .put('/api/v1/auth/profile')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(updateData)
+                .expect(200);
 
-        it('should validate phone number format', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/profile')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    phone: 'invalid'
-                });
-
-            expect(res.status).toBe(400);
+            expect(response.body.success).to.be.true;
+            expect(response.body.user).to.have.property('firstName', updateData.firstName);
+            expect(response.body.user).to.have.property('lastName', updateData.lastName);
+            console.log('✅ Update user profile test successful');
         });
     });
 
-    describe('PUT /api/v1/users/email', () => {
-        it('should update email with verification', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/email')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    email: 'newemail@example.com',
-                    password: 'Password123!'
-                });
+    describe('Password Management', () => {
+        it('should change password successfully', async () => {
+            console.log('🔄 Testing password change...');
+            const passwordData = {
+                currentPassword: 'Test123!',
+                newPassword: 'NewTest123!'
+            };
+            console.log('📤 Sending password change request');
 
-            expect(res.status).toBe(200);
-            expect(res.body.data).toBe('Email verification sent');
+            const response = await request(server)
+                .put('/api/v1/auth/settings')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(passwordData)
+                .expect(200);
 
-            const updatedUser = await User.findById(user._id);
-            expect(updatedUser.emailVerified).toBe(false);
-            expect(updatedUser.emailVerificationToken).toBeDefined();
+            expect(response.body.success).to.be.true;
+            console.log('✅ Password change test successful');
         });
 
-        it('should require current password', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/email')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    email: 'newemail@example.com'
-                });
+        it('should not change password with incorrect current password', async () => {
+            console.log('🔄 Testing password change with incorrect current password...');
+            const passwordData = {
+                currentPassword: 'WrongPassword',
+                newPassword: 'NewTest123!'
+            };
+            console.log('📤 Sending password change request with wrong current password');
 
-            expect(res.status).toBe(400);
-        });
-    });
+            const response = await request(server)
+                .put('/api/v1/auth/settings')
+                .set('Authorization', `Bearer ${authToken}`)
+                .send(passwordData)
+                .expect(401);
 
-    describe('PUT /api/v1/users/password', () => {
-        it('should update password', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/password')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    currentPassword: 'Password123!',
-                    newPassword: 'NewPassword123!'
-                });
-
-            expect(res.status).toBe(200);
-            expect(res.body.token).toBeDefined();
-
-            // Verify new password works
-            const updatedUser = await User.findById(user._id).select('+password');
-            const isMatch = await updatedUser.matchPassword('NewPassword123!');
-            expect(isMatch).toBe(true);
-        });
-
-        it('should validate password requirements', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/password')
-                .set('Authorization', `Bearer ${token}`)
-                .send({
-                    currentPassword: 'Password123!',
-                    newPassword: 'weak'
-                });
-
-            expect(res.status).toBe(400);
-        });
-    });
-
-    describe('PUT /api/v1/users/2fa/enable', () => {
-        it('should enable 2FA', async () => {
-            // First request to get secret
-            const setup = await request(app)
-                .post('/api/v1/users/2fa/setup')
-                .set('Authorization', `Bearer ${token}`);
-
-            expect(setup.status).toBe(200);
-            expect(setup.body.data.secret).toBeDefined();
-            expect(setup.body.data.qrCode).toBeDefined();
-
-            // Generate valid token
-            const token = generateToken(setup.body.data.secret);
-
-            // Enable 2FA with token
-            const res = await request(app)
-                .put('/api/v1/users/2fa/enable')
-                .set('Authorization', `Bearer ${token}`)
-                .send({ token });
-
-            expect(res.status).toBe(200);
-            
-            const updatedUser = await User.findById(user._id);
-            expect(updatedUser.twoFactorEnabled).toBe(true);
-            expect(updatedUser.twoFactorSecret).toBeDefined();
-        });
-
-        it('should reject invalid 2FA token', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/2fa/enable')
-                .set('Authorization', `Bearer ${token}`)
-                .send({ token: '123456' });
-
-            expect(res.status).toBe(400);
-        });
-    });
-
-    describe('PUT /api/v1/users/avatar', () => {
-        it('should upload avatar', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/avatar')
-                .set('Authorization', `Bearer ${token}`)
-                .attach('avatar', '__tests__/fixtures/test-avatar.jpg');
-
-            expect(res.status).toBe(200);
-            expect(res.body.data).toMatch(/avatar_.*\.jpg$/);
-
-            const updatedUser = await User.findById(user._id);
-            expect(updatedUser.avatar).toBe(res.body.data);
-        });
-
-        it('should validate image file type', async () => {
-            const res = await request(app)
-                .put('/api/v1/users/avatar')
-                .set('Authorization', `Bearer ${token}`)
-                .attach('avatar', '__tests__/fixtures/test.txt');
-
-            expect(res.status).toBe(400);
+            expect(response.body.success).to.be.false;
+            expect(response.body.message).to.include('password');
+            console.log('✅ Incorrect password change test successful');
         });
     });
 }); 

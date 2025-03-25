@@ -10,19 +10,26 @@ const crypto = require('crypto');
  *     User:
  *       type: object
  *       required:
- *         - name
+ *         - firstName
+ *         - lastName
  *         - email
  *         - password
  *       properties:
- *         name:
+ *         firstName:
  *           type: string
- *           description: User's full name
+ *           description: User's first name
+ *         lastName:
+ *           type: string
+ *           description: User's last name
  *         email:
  *           type: string
  *           description: User's email address
  *         password:
  *           type: string
  *           description: User's password
+ *         subscribeNewsletter:
+ *           type: boolean
+ *           description: Whether user wants to subscribe to newsletter
  *         role:
  *           type: string
  *           enum: [user, admin, guide]
@@ -48,36 +55,40 @@ const crypto = require('crypto');
  *           properties:
  *             currency:
  *               type: string
- *             language:
- *               type: string
- *             notifications:
- *               type: object
- *               properties:
- *                 email:
- *                   type: boolean
- *                 sms:
- *                   type: boolean
  *         avatar:
  *           type: string
  *           description: URL to user's profile picture
  */
 
 const userSchema = new mongoose.Schema({
-    name: {
+    firstName: {
         type: String,
-        required: [true, 'Please provide your name']
+        required: [true, 'Please add a first name'],
+        trim: true
+    },
+    lastName: {
+        type: String,
+        required: [true, 'Please add a last name'],
+        trim: true
     },
     email: {
         type: String,
-        required: [true, 'Please provide your email'],
+        required: [true, 'Please add an email'],
         unique: true,
-        lowercase: true
+        match: [
+            /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+            'Please add a valid email'
+        ]
     },
     password: {
         type: String,
-        required: [true, 'Please provide a password'],
-        minlength: 8,
+        required: [true, 'Please add a password'],
+        minlength: 6,
         select: false
+    },
+    subscribeNewsletter: {
+        type: Boolean,
+        default: false
     },
     role: {
         type: String,
@@ -230,7 +241,7 @@ userSchema.pre('save', async function(next) {
 // Sign JWT and return
 userSchema.methods.getSignedJwtToken = function() {
     return jwt.sign({ id: this._id }, process.env.JWT_SECRET, {
-        expiresIn: process.env.JWT_EXPIRE
+        expiresIn: process.env.JWT_EXPIRES_IN
     });
 };
 

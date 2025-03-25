@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Advenro</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100">
+    <div class="flex">
+        <!-- Sidebar -->
+        <div class="w-64 bg-gray-800 min-h-screen">
+            <div class="p-4">
+                <h1 class="text-white text-xl font-bold">Advenro Admin</h1>
+            </div>
+            <nav class="mt-4">
+                <a href="/admin/dashboard" class="block px-4 py-2 text-white bg-gray-700">
+                    Dashboard
+                </a>
+                <a href="/admin/users" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                    Users
+                </a>
+                <a href="/admin/bookings" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                    Bookings
+                </a>
+                <a href="/admin/hotels" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                    Hotels
+                </a>
+                <a href="/admin/restaurants" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                    Restaurants
+                </a>
+                <a href="/admin/local-services" class="block px-4 py-2 text-gray-300 hover:bg-gray-700">
+                    Local Services
+                </a>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <div id="admin-dashboard">
+                <!-- Content will be dynamically inserted here by adminDashboard.js -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../../js/admin/adminDashboard.js"></script>
+</body>
+</html> 

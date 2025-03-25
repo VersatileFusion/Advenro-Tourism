@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="X-Frame-Options" content="DENY">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data: https:; font-src 'self' https://cdnjs.cloudflare.com;">
+    <title>User Profile - Advenro</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <link rel="stylesheet" href="styles/ui-components.css">
+    <link rel="stylesheet" href="styles/security.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Header will be dynamically loaded -->
+    <div id="header"></div>
+
+    <main class="profile-container">
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <img src="images/default-avatar.png" alt="Profile Picture" id="profile-image" crossorigin="anonymous">
+                <button class="change-avatar-btn" aria-label="Change profile picture">
+                    <i class="fas fa-camera"></i>
+                </button>
+            </div>
+            <h1>My Profile</h1>
+        </div>
+
+        <div class="profile-content">
+            <div class="profile-section">
+                <h2>Personal Information</h2>
+                <form id="personal-info-form" class="profile-form" autocomplete="off">
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required maxlength="100" pattern="^[a-zA-Z\s-']+$">
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email</label>
+                        <input type="email" id="email" name="email" required maxlength="255">
+                    </div>
+                    <div class="form-group">
+                        <label for="phone">Phone Number</label>
+                        <input type="tel" id="phone" name="phone" pattern="^\+?[\d\s-]{10,}$" maxlength="20">
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location</label>
+                        <input type="text" id="location" name="location" maxlength="200">
+                    </div>
+                    <button type="submit" class="btn-primary">Save Changes</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h2>Travel Preferences</h2>
+                <form id="preferences-form" class="profile-form">
+                    <div class="form-group">
+                        <label for="preferredDestinations">Preferred Destinations</label>
+                        <select id="preferredDestinations" name="preferredDestinations" multiple>
+                            <option value="beach">Beach</option>
+                            <option value="mountain">Mountain</option>
+                            <option value="city">City</option>
+                            <option value="countryside">Countryside</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="travelStyle">Travel Style</label>
+                        <select id="travelStyle" name="travelStyle">
+                            <option value="luxury">Luxury</option>
+                            <option value="budget">Budget</option>
+                            <option value="adventure">Adventure</option>
+                            <option value="cultural">Cultural</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Interests</label>
+                        <div class="checkbox-group">
+                            <label><input type="checkbox" name="interests" value="food"> Food & Dining</label>
+                            <label><input type="checkbox" name="interests" value="history"> History & Culture</label>
+                            <label><input type="checkbox" name="interests" value="nature"> Nature & Wildlife</label>
+                            <label><input type="checkbox" name="interests" value="adventure"> Adventure Sports</label>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn-primary">Save Preferences</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h2>Security</h2>
+                <form id="security-form" class="profile-form" autocomplete="off">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" name="currentPassword" required 
+                               minlength="8" maxlength="128" autocomplete="off">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" name="newPassword" required 
+                               minlength="8" maxlength="128" 
+                               pattern="^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$"
+                               title="Password must contain at least 8 characters, including uppercase, lowercase, number and special character"
+                               autocomplete="new-password">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmPassword">Confirm New Password</label>
+                        <input type="password" id="confirmPassword" name="confirmPassword" required 
+                               minlength="8" maxlength="128" autocomplete="new-password">
+                    </div>
+                    <button type="submit" class="btn-primary">Change Password</button>
+                </form>
+            </div>
+
+            <div class="profile-section">
+                <h2>My Bookings</h2>
+                <div id="bookings-list" class="bookings-container">
+                    <!-- Bookings will be loaded dynamically -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer will be dynamically loaded -->
+    <div id="footer"></div>
+
+    <script type="module" src="scripts/profile.js"></script>
+</body>
+</html> 

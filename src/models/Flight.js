@@ -57,88 +57,104 @@ const mongoose = require('mongoose');
  */
 
 const flightSchema = new mongoose.Schema({
+    airline: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Airline',
+        required: true
+    },
     flightNumber: {
         type: String,
-        required: [true, 'Please add a flight number'],
-        unique: true,
-        trim: true
+        required: true
     },
     departure: {
         airport: {
-            type: String,
-            required: [true, 'Please add departure airport']
-        },
-        city: {
-            type: String,
-            required: [true, 'Please add departure city']
-        },
-        country: {
-            type: String,
-            required: [true, 'Please add departure country']
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Airport',
+            required: true
         },
         date: {
             type: Date,
-            required: [true, 'Please add departure date']
+            required: true
+        },
+        time: {
+            type: String,
+            required: true
         }
     },
     arrival: {
         airport: {
-            type: String,
-            required: [true, 'Please add arrival airport']
-        },
-        city: {
-            type: String,
-            required: [true, 'Please add arrival city']
-        },
-        country: {
-            type: String,
-            required: [true, 'Please add arrival country']
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Airport',
+            required: true
         },
         date: {
             type: Date,
-            required: [true, 'Please add arrival date']
+            required: true
+        },
+        time: {
+            type: String,
+            required: true
         }
     },
-    airline: {
+    duration: {
         type: String,
-        required: [true, 'Please add airline name']
+        required: true
+    },
+    stops: {
+        type: Number,
+        default: 0
     },
     price: {
         type: Number,
-        required: [true, 'Please add ticket price']
+        required: true
     },
-    seats: {
-        total: {
+    availableSeats: {
+        type: Number,
+        required: true
+    },
+    aircraft: {
+        type: String,
+        required: true
+    },
+    status: {
+        type: String,
+        enum: ['scheduled', 'delayed', 'cancelled', 'completed'],
+        default: 'scheduled'
+    },
+    baggageAllowance: {
+        checked: {
             type: Number,
-            required: [true, 'Please add total seats']
+            default: 20
         },
-        available: {
+        cabin: {
             type: Number,
-            required: [true, 'Please add available seats']
+            default: 7
         }
     },
-    class: {
+    amenities: [{
         type: String,
-        enum: ['economy', 'business', 'first'],
-        default: 'economy'
-    },
+        enum: ['wifi', 'entertainment', 'meals', 'drinks', 'power-outlet']
+    }],
     createdAt: {
+        type: Date,
+        default: Date.now
+    },
+    updatedAt: {
         type: Date,
         default: Date.now
     }
 });
 
-// Create indexes for common queries
-flightSchema.index({ 'departure.date': 1, 'departure.city': 1 });
-flightSchema.index({ 'arrival.date': 1, 'arrival.city': 1 });
-flightSchema.index({ price: 1 });
-
-// Middleware to ensure available seats don't exceed total seats
+// Update the updatedAt timestamp before saving
 flightSchema.pre('save', function(next) {
-    if (this.seats.available > this.seats.total) {
-        next(new Error('Available seats cannot exceed total seats'));
-    }
+    this.updatedAt = Date.now();
     next();
 });
 
-module.exports = { schema: flightSchema }; 
+// Indexes for better query performance
+flightSchema.index({ 'departure.airport': 1, 'arrival.airport': 1, 'departure.date': 1 });
+flightSchema.index({ flightNumber: 1, airline: 1 }, { unique: true });
+
+const Flight = mongoose.model('Flight', flightSchema);
+
+module.exports = Flight; 

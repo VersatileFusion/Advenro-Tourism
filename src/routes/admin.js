@@ -3,6 +3,12 @@ const router = express.Router();
 const { authenticate } = require('../middleware/auth');
 const { authorize } = require('../middleware/auth');
 const adminController = require('../controllers/adminController');
+const User = require('../models/User');
+const Hotel = require('../models/Hotel');
+const Flight = require('../models/Flight');
+const Restaurant = require('../models/Restaurant');
+const Event = require('../models/Event');
+const LocalService = require('../models/LocalService');
 
 /**
  * @swagger
@@ -331,5 +337,30 @@ router.post('/backup/:filename', authenticate, authorize('admin'), adminControll
  *         description: List of backups retrieved successfully
  */
 router.get('/backups', authenticate, authorize('admin'), adminController.getBackupsList);
+
+// Add this new route for admin stats
+router.get('/stats', auth, async (req, res) => {
+  try {
+    // Check if user is admin
+    if (req.user.role !== 'admin') {
+      return res.status(403).json({ message: 'Access denied. Admin only.' });
+    }
+
+    // Get counts from different collections
+    const stats = {
+      users: await User.countDocuments(),
+      hotels: await Hotel.countDocuments(),
+      flights: await Flight.countDocuments(),
+      restaurants: await Restaurant.countDocuments(),
+      events: await Event.countDocuments(),
+      localServices: await LocalService.countDocuments()
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching admin stats:', error);
+    res.status(500).json({ message: 'Error fetching admin statistics' });
+  }
+});
 
 module.exports = router; 

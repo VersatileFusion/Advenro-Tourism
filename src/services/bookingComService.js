@@ -11,6 +11,7 @@ const AppError = require('../utils/appError');
 
 class BookingComService {
     constructor() {
+        // Direct RapidAPI connection
         this.apiClient = axios.create({
             baseURL: 'https://booking-com.p.rapidapi.com/v1',
             headers: {
@@ -228,12 +229,14 @@ class BookingComService {
      * @returns {Promise<Array>} List of hotels
      */
     async searchHotels(params) {
-        const cacheKey = this.generateCacheKey('search', params.destId, params);
-        
-        return this.getCachedData(
-            cacheKey,
-            async () => {
-                try {
+        try {
+            // Generate cache key for this search
+            const cacheKey = this.generateCacheKey('search', params.destId || 'default', params);
+            
+            return this.getCachedData(
+                cacheKey,
+                async () => {
+                    // Try the real API without fallback
                     const response = await this.apiClient.get('/hotels/search', {
                         params: {
                             checkin_date: params.checkIn,
@@ -250,271 +253,116 @@ class BookingComService {
                             categories_filter_ids: params.categories || ''
                         }
                     });
-                    return response.data;
-                } catch (error) {
-                    throw new ErrorResponse(
-                        error.response?.data?.message || 'Error searching hotels',
-                        error.response?.status || 500
-                    );
-                }
-            },
-            {
-                ttl: this.cacheTTL.search,
-                compress: true
-            }
-        );
-    }
-
-    /**
-     * Get hotel details by hotel ID
-     * @param {string} hotelId Hotel ID
-     * @returns {Promise<Object>} Hotel details
-     */
-    async getHotelDetails(hotelId) {
-        try {
-            const response = await this.apiClient.get('/hotels/data', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel details',
-                error.response?.status || 500
+                    
+                    if (!response.data || !response.data.result) {
+                        throw new ErrorResponse('Invalid response from Booking.com API', 500);
+                    }
+                    
+                    return response.data.result;
+                },
+                { ttl: this.cacheTTL.search }
             );
+        } catch (error) {
+            console.error('Error in searchHotels:', error);
+            throw new ErrorResponse('Failed to retrieve hotel data from API', 500);
         }
     }
 
     /**
-     * Search for locations (cities, regions, etc.)
+     * Search for locations
      * @param {string} query Search query
      * @returns {Promise<Array>} List of locations
      */
     async searchLocations(query) {
         try {
-            const response = await this.apiClient.get('/hotels/locations', {
-                params: {
-                    name: query,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error searching locations',
-                error.response?.status || 500
+            const cacheKey = this.generateCacheKey('locations', query);
+            
+            return this.getCachedData(
+                cacheKey,
+                async () => {
+                    // Use real API without fallback
+                    const response = await this.apiClient.get('/hotels/locations', {
+                        params: {
+                            name: query,
+                            locale: 'en-gb'
+                        }
+                    });
+                    
+                    if (!response.data) {
+                        throw new ErrorResponse('Invalid response from locations API', 500);
+                    }
+                    
+                    return response.data;
+                },
+                { ttl: this.cacheTTL.static }
             );
+        } catch (error) {
+            console.error('Error in searchLocations:', error);
+            throw new ErrorResponse('Failed to retrieve location data from API', 500);
+        }
+    }
+
+    /**
+     * Get hotel details
+     * @param {string} hotelId Hotel ID
+     * @returns {Promise<Object>} Hotel details
+     */
+    async getHotelDetails(hotelId) {
+        try {
+            const cacheKey = this.generateCacheKey('hotel', hotelId);
+            
+            return this.getCachedData(
+                cacheKey,
+                async () => {
+                    // Use real API without fallback
+                    const response = await this.apiClient.get('/hotels/data', {
+                        params: {
+                            hotel_id: hotelId,
+                            locale: 'en-gb'
+                        }
+                    });
+                    
+                    return response.data;
+                },
+                { ttl: this.cacheTTL.details }
+            );
+        } catch (error) {
+            console.error('Error in getHotelDetails:', error);
+            throw new ErrorResponse('Failed to retrieve hotel details from API', 500);
         }
     }
 
     /**
      * Get hotel reviews
      * @param {string} hotelId Hotel ID
-     * @param {Object} params Additional parameters
-     * @returns {Promise<Array>} List of reviews
+     * @param {Object} options Options
+     * @returns {Promise<Array>} Hotel reviews
      */
-    async getHotelReviews(hotelId, params = {}) {
+    async getHotelReviews(hotelId, options = {}) {
         try {
-            const response = await this.apiClient.get('/hotels/reviews', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: params.locale || 'en-gb',
-                    sort_type: params.sortType || 'SORT_MOST_RELEVANT',
-                    page_number: params.page || '0',
-                    language_filter: params.language || 'en'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel reviews',
-                error.response?.status || 500
+            const cacheKey = this.generateCacheKey('reviews', hotelId, options);
+            
+            return this.getCachedData(
+                cacheKey,
+                async () => {
+                    // Use real API without fallback
+                    const response = await this.apiClient.get('/hotels/reviews', {
+                        params: {
+                            hotel_id: hotelId,
+                            locale: options.language || 'en-gb',
+                            sort_type: options.sort || 'SORT_MOST_RELEVANT',
+                            customer_type: options.customerType || '',
+                            page_number: options.page || 1
+                        }
+                    });
+                    
+                    return response.data;
+                },
+                { ttl: this.cacheTTL.reviews }
             );
-        }
-    }
-
-    /**
-     * Get hotel description
-     * @param {string} hotelId Hotel ID
-     * @returns {Promise<Object>} Hotel description
-     */
-    async getHotelDescription(hotelId) {
-        try {
-            const response = await this.apiClient.get('/hotels/description', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
         } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel description',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get hotel photos
-     * @param {string} hotelId Hotel ID
-     * @returns {Promise<Array>} List of hotel photos
-     */
-    async getHotelPhotos(hotelId) {
-        try {
-            const response = await this.apiClient.get('/hotels/photos', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel photos',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get room availability for a specific hotel
-     * @param {string} hotelId Hotel ID
-     * @param {Object} params Search parameters
-     * @returns {Promise<Object>} Room availability details
-     */
-    async getRoomAvailability(hotelId, params) {
-        try {
-            const response = await this.apiClient.get('/hotels/room-availability', {
-                params: {
-                    hotel_id: hotelId,
-                    arrival_date: params.checkIn,
-                    departure_date: params.checkOut,
-                    guest_qty: params.guests || '2',
-                    room_qty: params.rooms || '1',
-                    currency: params.currency || 'USD',
-                    locale: params.locale || 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching room availability',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get hotel facilities
-     * @param {string} hotelId Hotel ID
-     * @returns {Promise<Array>} List of hotel facilities
-     */
-    async getHotelFacilities(hotelId) {
-        try {
-            const response = await this.apiClient.get('/hotels/facilities', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel facilities',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get nearby attractions
-     * @param {string} hotelId Hotel ID
-     * @param {Object} params Additional parameters
-     * @returns {Promise<Array>} List of nearby attractions
-     */
-    async getNearbyAttractions(hotelId, params = {}) {
-        try {
-            const response = await this.apiClient.get('/hotels/nearby-places', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: params.locale || 'en-gb',
-                    radius: params.radius || 2000, // meters
-                    types: params.types || 'landmark,restaurant,shopping'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching nearby attractions',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get currency exchange rates
-     * @param {string} baseCurrency Base currency code
-     * @returns {Promise<Object>} Exchange rates
-     */
-    async getExchangeRates(baseCurrency = 'USD') {
-        try {
-            const response = await this.apiClient.get('/meta/exchange-rates', {
-                params: {
-                    currency: baseCurrency,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching exchange rates',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get property types
-     * @returns {Promise<Array>} List of property types
-     */
-    async getPropertyTypes() {
-        try {
-            const response = await this.apiClient.get('/meta/property-types', {
-                params: {
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching property types',
-                error.response?.status || 500
-            );
-        }
-    }
-
-    /**
-     * Get hotel policies
-     * @param {string} hotelId Hotel ID
-     * @returns {Promise<Object>} Hotel policies
-     */
-    async getHotelPolicies(hotelId) {
-        try {
-            const response = await this.apiClient.get('/hotels/policies', {
-                params: {
-                    hotel_id: hotelId,
-                    locale: 'en-gb'
-                }
-            });
-            return response.data;
-        } catch (error) {
-            throw new ErrorResponse(
-                error.response?.data?.message || 'Error fetching hotel policies',
-                error.response?.status || 500
-            );
+            console.error('Error in getHotelReviews:', error);
+            throw new ErrorResponse('Failed to retrieve hotel reviews from API', 500);
         }
     }
 }
@@ -555,4 +403,5 @@ exports.createBooking = async (hotelId, bookingData, userId) => {
     return booking;
 };
 
+// Export a singleton instance
 module.exports = new BookingComService(); 

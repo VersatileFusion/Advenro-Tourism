@@ -176,4 +176,37 @@ exports.getHotelsInRadius = async (req, res) => {
             message: 'Server error'
         });
     }
+};
+
+// @desc    Get all MongoDB hotels (public)
+// @route   GET /api/v1/mongodb-hotels
+// @access  Public
+exports.getMongoDBHotels = async (req, res) => {
+    try {
+        console.log('🏨 Fetching all MongoDB hotels...');
+        const { limit = 100 } = req.query;
+        
+        // Find all hotels
+        const hotels = await Hotel.find()
+            .limit(Number(limit))
+            .select('-__v'); // Exclude version field
+            
+        const total = await Hotel.countDocuments();
+        
+        console.log(`✅ Found ${hotels.length} hotels in MongoDB`);
+        
+        res.json({
+            success: true,
+            count: hotels.length,
+            total,
+            data: hotels
+        });
+    } catch (error) {
+        console.error('❌ Error fetching MongoDB hotels:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
 }; 

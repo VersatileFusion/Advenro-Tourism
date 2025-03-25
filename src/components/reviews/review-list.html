@@ -1,0 +1,117 @@
+<div class="reviews-container">
+    <div class="reviews-header">
+        <h2>Reviews</h2>
+        <div class="reviews-stats">
+            <div class="rating-summary">
+                <span class="average-rating">0.0</span>
+                <div class="stars">
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                    <i class="fas fa-star"></i>
+                </div>
+                <span class="total-reviews">0 reviews</span>
+            </div>
+            <div class="rating-bars">
+                <div class="rating-bar">
+                    <span>5</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 0%"></div>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="rating-bar">
+                    <span>4</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 0%"></div>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="rating-bar">
+                    <span>3</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 0%"></div>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="rating-bar">
+                    <span>2</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 0%"></div>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+                <div class="rating-bar">
+                    <span>1</span>
+                    <div class="bar">
+                        <div class="fill" style="width: 0%"></div>
+                    </div>
+                    <span class="count">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="reviews-filters">
+        <div class="filter-group">
+            <label>Sort by:</label>
+            <select id="sort-reviews">
+                <option value="newest">Newest</option>
+                <option value="highest">Highest Rated</option>
+                <option value="helpful">Most Helpful</option>
+            </select>
+        </div>
+        <div class="filter-group">
+            <label>Filter by:</label>
+            <select id="filter-reviews">
+                <option value="all">All Reviews</option>
+                <option value="verified">Verified Bookings</option>
+                <option value="with-photos">With Photos</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="reviews-list">
+        <!-- Reviews will be dynamically inserted here -->
+    </div>
+
+    <div class="reviews-pagination">
+        <button class="prev-page" disabled>Previous</button>
+        <span class="page-info">Page 1 of 1</span>
+        <button class="next-page" disabled>Next</button>
+    </div>
+
+    <div class="review-form-container" style="display: none;">
+        <h3>Write a Review</h3>
+        <form id="review-form">
+            <div class="form-group">
+                <label>Rating</label>
+                <div class="rating-input">
+                    <i class="fas fa-star" data-rating="1"></i>
+                    <i class="fas fa-star" data-rating="2"></i>
+                    <i class="fas fa-star" data-rating="3"></i>
+                    <i class="fas fa-star" data-rating="4"></i>
+                    <i class="fas fa-star" data-rating="5"></i>
+                </div>
+                <input type="hidden" id="rating" required>
+            </div>
+            <div class="form-group">
+                <label for="review-text">Your Review</label>
+                <textarea id="review-text" rows="5" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Photos (optional)</label>
+                <div class="photo-upload">
+                    <input type="file" id="review-photos" multiple accept="image/*">
+                    <label for="review-photos" class="upload-btn">
+                        <i class="fas fa-camera"></i>
+                        Add Photos
+                    </label>
+                </div>
+                <div class="photo-preview"></div>
+            </div>
+            <button type="submit" class="submit-review">Submit Review</button>
+        </form>
+    </div>
+</div> 

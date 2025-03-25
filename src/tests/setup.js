@@ -1,8 +1,14 @@
 const dotenv = require('dotenv');
 const path = require('path');
 const mongoose = require('mongoose');
-const { MongoMemoryServer } = require('mongodb-memory-server');
 const redisClient = require('../config/redis');
+const { MongoMemoryServer } = require('mongodb-memory-server');
+const sinon = require('sinon');
+const chai = require('chai');
+const { expect } = chai;
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { User } = require('../models/user');
 
 // Load test environment variables
 dotenv.config({ path: path.join(__dirname, '../config/test.env') });
@@ -10,89 +16,123 @@ dotenv.config({ path: path.join(__dirname, '../config/test.env') });
 // Set test environment
 process.env.NODE_ENV = 'test';
 
-// Mock nodemailer
-jest.mock('nodemailer', () => ({
-    createTransport: jest.fn().mockReturnValue({
-        sendMail: jest.fn().mockResolvedValue({ response: 'Success' })
-    })
-}));
+// Mock Redis
+const mockRedis = {
+  get: sinon.stub(),
+  set: sinon.stub(),
+  setex: sinon.stub(),
+  del: sinon.stub(),
+  flushall: sinon.stub(),
+  quit: sinon.stub(),
+  on: sinon.stub(),
+  connect: sinon.stub(),
+  disconnect: sinon.stub()
+};
 
-// Mock twilio
-jest.mock('twilio', () => () => ({
-    messages: {
-        create: jest.fn().mockResolvedValue({ sid: 'test-sid' })
-    }
-}));
+// Mock Nodemailer
+const mockNodemailer = {
+  createTransport: sinon.stub().returns({
+    sendMail: sinon.stub().resolves({ response: 'Success' })
+  })
+};
 
-// Mock web-push
-jest.mock('web-push', () => ({
-    setVapidDetails: jest.fn(),
-    sendNotification: jest.fn().mockResolvedValue()
-}));
-
-// Mock file upload
-jest.mock('express-fileupload', () => () => (req, res, next) => {
-    if (req.files) {
-        req.files.avatar = {
-            name: 'test-avatar.jpg',
-            mimetype: 'image/jpeg',
-            size: 1024 * 1024, // 1MB
-            mv: jest.fn().mockResolvedValue()
-        };
-    }
-    next();
+// Mock Twilio
+const mockTwilio = sinon.stub().returns({
+  messages: {
+    create: sinon.stub().resolves({ sid: 'test-sid' })
+  }
 });
 
+// Mock Web Push
+const mockWebPush = {
+  setVapidDetails: sinon.stub(),
+  sendNotification: sinon.stub().resolves()
+};
+
+// Mock Express File Upload
+const mockFileUpload = () => (req, res, next) => {
+  req.files = {
+    file: {
+      name: 'test.jpg',
+      data: Buffer.from('test'),
+      size: 1024,
+      mimetype: 'image/jpeg',
+      mv: sinon.stub().resolves()
+    }
+  };
+  next();
+};
+
+// Replace actual modules with mocks
+const proxyquire = require('proxyquire').noCallThru();
+
+proxyquire('../config/redis', {
+  'ioredis': function() { return mockRedis; }
+});
+
+proxyquire('nodemailer', mockNodemailer);
+proxyquire('twilio', mockTwilio);
+proxyquire('web-push', mockWebPush);
+proxyquire('express-fileupload', mockFileUpload);
+
+// Suppress console output during tests
+console.error = sinon.stub();
+console.warn = sinon.stub();
+
+// Test database setup
 let mongoServer;
 
-// Setup before all tests
-beforeAll(async () => {
-    // Setup MongoDB Memory Server
-    mongoServer = await MongoMemoryServer.create();
-    const mongoUri = mongoServer.getUri();
-    await mongoose.connect(mongoUri);
-
-    // Clear Redis cache
-    await redisClient.flushall();
+before(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  const mongoUri = mongoServer.getUri();
+  await mongoose.connect(mongoUri);
 });
 
-// Cleanup after all tests
-afterAll(async () => {
-    await mongoose.disconnect();
-    await mongoServer.stop();
-    await redisClient.quit();
+after(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
-// Clear database collections between tests
-afterEach(async () => {
-    const collections = mongoose.connection.collections;
-    for (const key in collections) {
-        await collections[key].deleteMany();
-    }
+beforeEach(async () => {
+  // Clear all collections before each test
+  const collections = await mongoose.connection.db.collections();
+  for (let collection of collections) {
+    await collection.deleteMany({});
+  }
+  
+  // Reset all stubs
+  sinon.reset();
 });
 
-// Global test helpers
-global.createTestUser = async (userData = {}) => {
-    const User = mongoose.model('User');
-    const defaultUser = {
-        name: 'Test User',
-        email: 'test@example.com',
-        password: 'password123',
-        role: 'user'
-    };
-    return await User.create({ ...defaultUser, ...userData });
-};
+// Test helper functions
+async function createTestUser(role = 'user') {
+  const userData = {
+    email: 'test@example.com',
+    password: await bcrypt.hash('password123', 10),
+    firstName: 'Test',
+    lastName: 'User',
+    role: role
+  };
+  
+  return await User.create(userData);
+}
 
-global.generateAuthToken = async (user) => {
-    return user.generateAuthToken();
-};
+function generateAuthToken(user) {
+  return jwt.sign(
+    { userId: user._id, role: user.role },
+    process.env.JWT_SECRET || 'test-secret',
+    { expiresIn: '1h' }
+  );
+}
 
-// Mock Redis for testing
-jest.mock('../config/redis', () => ({
-    get: jest.fn(),
-    set: jest.fn(),
-    setex: jest.fn(),
-    del: jest.fn(),
-    flushall: jest.fn(),
-    quit: jest.fn()
-})); 
+// Export test helpers and mocks
+module.exports = {
+  expect,
+  createTestUser,
+  generateAuthToken,
+  mockRedis,
+  mockNodemailer,
+  mockTwilio,
+  mockWebPush,
+  mockFileUpload
+}; 

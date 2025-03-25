@@ -11,6 +11,7 @@ const {
     getToursWithinRadius,
     getTourStats
 } = require('../controllers/tourController');
+const toursController = require('../controllers/tours');
 
 /**
  * @swagger
@@ -260,5 +261,14 @@ router.get('/radius/:location/:distance', getToursWithinRadius);
  *                         type: number
  */
 router.get('/stats', getTourStats);
+
+// Public routes
+router.get('/destinations/search', toursController.searchDestinations);
+router.post('/search', toursController.searchTours);
+router.get('/:id', toursController.getTourDetails);
+
+// Protected routes (require authentication)
+router.post('/book', authenticate, toursController.bookTour);
+router.get('/bookings/user', authenticate, toursController.getUserBookings);
 
 module.exports = router; 

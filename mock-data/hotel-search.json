@@ -1,0 +1,64 @@
+{
+  "success": true,
+  "count": 2,
+  "data": [
+    {
+      "id": "123456",
+      "name": "Mock Hotel London",
+      "location": {
+        "city": "London",
+        "country": "United Kingdom",
+        "address": "123 London Road",
+        "latitude": 51.5074,
+        "longitude": 0.1278
+      },
+      "price": 150,
+      "currency": "USD",
+      "rating": 8.7,
+      "stars": 4,
+      "images": [
+        "https://example.com/hotel1.jpg"
+      ],
+      "description": "A luxury hotel in the heart of London",
+      "amenities": [
+        "WiFi",
+        "Pool",
+        "Spa",
+        "Restaurant"
+      ],
+      "reviewCount": 123,
+      "checkIn": "14:00",
+      "checkOut": "11:00",
+      "hasAvailability": true
+    },
+    {
+      "id": "789012",
+      "name": "Another Mock Hotel",
+      "location": {
+        "city": "London",
+        "country": "United Kingdom",
+        "address": "456 Baker Street",
+        "latitude": 51.5237,
+        "longitude": 0.1582
+      },
+      "price": 200,
+      "currency": "USD",
+      "rating": 9.2,
+      "stars": 5,
+      "images": [
+        "https://example.com/hotel3.jpg"
+      ],
+      "description": "A modern hotel in London with excellent amenities",
+      "amenities": [
+        "WiFi",
+        "Gym",
+        "Bar",
+        "Restaurant"
+      ],
+      "reviewCount": 256,
+      "checkIn": "15:00",
+      "checkOut": "12:00",
+      "hasAvailability": true
+    }
+  ]
+}

@@ -35,6 +35,7 @@ const { protect, authorize } = require('../middleware/auth');
 const { authenticate } = require('../middleware/auth');
 const { validate } = require('../middleware/validate');
 const { schemas } = require('../middleware/validate');
+const axios = require('axios');
 
 const router = express.Router();
 
@@ -58,6 +59,10 @@ router.use([
     '/hotels/:id/accessibility',
     '/hotels/:id/similar'
 ], detailsLimiter);
+
+// Booking.com API configuration
+const BOOKING_API_KEY = process.env.BOOKING_API_KEY;
+const BOOKING_API_URL = 'https://distribution-xml.booking.com/2.0';
 
 /**
  * @swagger
@@ -739,5 +744,154 @@ router.post('/hotels/:id/book', authenticate, validate(schemas.createBookingComB
 router.get('/my-bookings', authenticate, getUserBookings);
 router.get('/my-bookings/:id', authenticate, getBookingDetails);
 router.put('/my-bookings/:id/cancel', authenticate, cancelBooking);
+
+// Search hotels
+router.post('/search', authenticate, async (req, res) => {
+  try {
+    const { location, checkIn, checkOut, guests } = req.body;
+
+    // Validate input
+    if (!location || !checkIn || !checkOut || !guests) {
+      return res.status(400).json({ message: 'Missing required parameters' });
+    }
+
+    // Call Booking.com API
+    const response = await axios.get(`${BOOKING_API_URL}/hotels`, {
+      headers: {
+        'Authorization': `Bearer ${BOOKING_API_KEY}`,
+        'Content-Type': 'application/json'
+      },
+      params: {
+        location,
+        checkin: checkIn,
+        checkout: checkOut,
+        guests: guests
+      }
+    });
+
+    // Transform the response to match our frontend expectations
+    const hotels = response.data.hotels.map(hotel => ({
+      id: hotel.hotel_id,
+      name: hotel.name,
+      location: hotel.address,
+      description: hotel.description,
+      price: hotel.price,
+      rating: hotel.rating,
+      amenities: hotel.amenities,
+      images: hotel.images
+    }));
+
+    res.json(hotels);
+  } catch (error) {
+    console.error('Error searching hotels:', error);
+    res.status(500).json({ message: 'Error searching hotels' });
+  }
+});
+
+// Book a hotel
+router.post('/book', authenticate, async (req, res) => {
+  try {
+    const { hotelId, checkIn, checkOut, guests } = req.body;
+
+    // Validate input
+    if (!hotelId || !checkIn || !checkOut || !guests) {
+      return res.status(400).json({ message: 'Missing required parameters' });
+    }
+
+    // Call Booking.com API to create booking
+    const response = await axios.post(`${BOOKING_API_URL}/bookings`, {
+      hotel_id: hotelId,
+      checkin: checkIn,
+      checkout: checkOut,
+      guests: guests,
+      user_id: req.user.id // Use authenticated user's ID
+    }, {
+      headers: {
+        'Authorization': `Bearer ${BOOKING_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Save booking to our database
+    const booking = await Booking.create({
+      userId: req.user.id,
+      hotelId: hotelId,
+      checkIn: checkIn,
+      checkOut: checkOut,
+      guests: guests,
+      bookingComId: response.data.booking_id,
+      status: 'confirmed'
+    });
+
+    res.json(booking);
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    res.status(500).json({ message: 'Error creating booking' });
+  }
+});
+
+// Get booking details
+router.get('/bookings/:id', authenticate, async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      userId: req.user.id
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Get updated status from Booking.com
+    const response = await axios.get(`${BOOKING_API_URL}/bookings/${booking.bookingComId}`, {
+      headers: {
+        'Authorization': `Bearer ${BOOKING_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Update booking status if changed
+    if (response.data.status !== booking.status) {
+      booking.status = response.data.status;
+      await booking.save();
+    }
+
+    res.json(booking);
+  } catch (error) {
+    console.error('Error fetching booking details:', error);
+    res.status(500).json({ message: 'Error fetching booking details' });
+  }
+});
+
+// Cancel booking
+router.post('/bookings/:id/cancel', authenticate, async (req, res) => {
+  try {
+    const booking = await Booking.findOne({
+      _id: req.params.id,
+      userId: req.user.id
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found' });
+    }
+
+    // Cancel booking on Booking.com
+    await axios.post(`${BOOKING_API_URL}/bookings/${booking.bookingComId}/cancel`, {}, {
+      headers: {
+        'Authorization': `Bearer ${BOOKING_API_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    // Update booking status
+    booking.status = 'cancelled';
+    await booking.save();
+
+    res.json(booking);
+  } catch (error) {
+    console.error('Error cancelling booking:', error);
+    res.status(500).json({ message: 'Error cancelling booking' });
+  }
+});
 
 module.exports = router; 

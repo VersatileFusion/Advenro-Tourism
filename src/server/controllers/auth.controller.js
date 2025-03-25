@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { User } = require('../../models');
+const { User } = require('../models');
 const { OAuth2Client } = require('google-auth-library');
 const { sendEmail } = require('../utils/email');
 const { uploadToCloud } = require('../utils/cloudStorage');
@@ -17,7 +17,7 @@ exports.register = async (req, res) => {
         if (existingUser) {
             return res.status(400).json({
                 success: false,
-                message: 'Email already registered'
+                message: 'User already exists'
             });
         }
 
@@ -31,18 +31,17 @@ exports.register = async (req, res) => {
             lastName,
             email,
             password: hashedPassword,
-            preferences: {
-                newsletter: subscribeNewsletter
-            }
+            role: 'user',
+            subscribeNewsletter
         });
 
         await user.save();
 
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { id: user._id },
+            process.env.JWT_SECRET || 'test-secret',
+            { expiresIn: '1h' }
         );
 
         res.status(201).json({
@@ -52,7 +51,9 @@ exports.register = async (req, res) => {
                 id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: user.email
+                email: user.email,
+                role: user.role,
+                subscribeNewsletter: user.subscribeNewsletter
             }
         });
     } catch (error) {
@@ -70,7 +71,7 @@ exports.login = async (req, res) => {
         const { email, password } = req.body;
 
         // Find user
-        const user = await User.findOne({ email });
+        const user = await User.findOne({ email }).select('+password');
         if (!user) {
             return res.status(401).json({
                 success: false,
@@ -78,8 +79,8 @@ exports.login = async (req, res) => {
             });
         }
 
-        // Check password
-        const isMatch = await bcrypt.compare(password, user.password);
+        // Check password using the model's comparePassword method
+        const isMatch = await user.comparePassword(password);
         if (!isMatch) {
             return res.status(401).json({
                 success: false,
@@ -89,9 +90,9 @@ exports.login = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user._id },
-            process.env.JWT_SECRET,
-            { expiresIn: '24h' }
+            { id: user._id },
+            process.env.JWT_SECRET || 'test-secret',
+            { expiresIn: '1h' }
         );
 
         res.json({
@@ -101,7 +102,9 @@ exports.login = async (req, res) => {
                 id: user._id,
                 firstName: user.firstName,
                 lastName: user.lastName,
-                email: user.email
+                email: user.email,
+                role: user.role,
+                subscribeNewsletter: user.preferences?.newsletter || false
             }
         });
     } catch (error) {
@@ -316,7 +319,7 @@ exports.facebookAuth = async (req, res) => {
 // Get user profile
 exports.getProfile = async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId).select('-password');
+        const user = await User.findById(req.user._id || req.user.id).select('-password');
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -340,8 +343,11 @@ exports.getProfile = async (req, res) => {
 // Update user profile
 exports.updateProfile = async (req, res) => {
     try {
+        console.log('Update Profile - Request Body:', req.body);
+        console.log('Update Profile - User ID:', req.user?._id || req.user?.id);
         const { firstName, lastName, email, phone, address } = req.body;
-        const user = await User.findById(req.user.userId);
+        const user = await User.findById(req.user._id || req.user.id);
+        console.log('Update Profile - Found User:', user ? 'Yes' : 'No');
 
         if (!user) {
             return res.status(404).json({
@@ -351,13 +357,15 @@ exports.updateProfile = async (req, res) => {
         }
 
         // Update fields
-        user.firstName = firstName;
-        user.lastName = lastName;
-        user.email = email;
-        user.phone = phone;
-        user.address = address;
+        if (firstName) user.firstName = firstName;
+        if (lastName) user.lastName = lastName;
+        if (email) user.email = email;
+        if (phone) user.phone = phone;
+        if (address) user.address = address;
 
+        console.log('Update Profile - Saving User with fields:', { firstName, lastName, email });
         await user.save();
+        console.log('Update Profile - User saved successfully');
 
         res.json({
             success: true,
@@ -372,6 +380,7 @@ exports.updateProfile = async (req, res) => {
             }
         });
     } catch (error) {
+        console.error('Update Profile Error:', error);
         res.status(500).json({
             success: false,
             message: 'Error updating profile',
@@ -384,7 +393,7 @@ exports.updateProfile = async (req, res) => {
 exports.updateSettings = async (req, res) => {
     try {
         const { currentPassword, newPassword, preferences } = req.body;
-        const user = await User.findById(req.user.userId);
+        const user = await User.findById(req.user._id || req.user.id);
 
         if (!user) {
             return res.status(404).json({
@@ -434,7 +443,7 @@ exports.updateSettings = async (req, res) => {
 // Delete user account
 exports.deleteAccount = async (req, res) => {
     try {
-        const user = await User.findById(req.user.userId);
+        const user = await User.findById(req.user._id || req.user.id);
         if (!user) {
             return res.status(404).json({
                 success: false,
@@ -467,7 +476,7 @@ exports.updateAvatar = async (req, res) => {
             });
         }
 
-        const user = await User.findById(req.user.userId);
+        const user = await User.findById(req.user._id || req.user.id);
         if (!user) {
             return res.status(404).json({
                 success: false,

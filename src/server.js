@@ -10,6 +10,8 @@ const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./config/swagger');
 const connectDB = require('./config/database');
 const path = require('path');
+const fileUpload = require('express-fileupload');
+const errorHandler = require('./middleware/error');
 
 // Load env vars
 console.log('🔧 Loading environment variables...');
@@ -29,14 +31,28 @@ const users = require('./routes/users');
 const reviews = require('./routes/reviews');
 const bookingCom = require('./routes/bookingCom');
 const admin = require('./routes/admin');
+const mongodbHotels = require('./routes/mongodbHotels');
+const localServices = require('./routes/localServices');
+const restaurants = require('./routes/restaurants');
+const events = require('./routes/eventRoutes');
 
 const app = express();
 
 // Body parser
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Cookie parser
 app.use(cookieParser());
+
+// File upload
+app.use(fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max file size
+    createParentPath: true,
+    useTempFiles: true,
+    tempFileDir: '/tmp/',
+    debug: process.env.NODE_ENV === 'development'
+}));
 
 // Enable CORS
 console.log('🌐 Enabling CORS...');
@@ -60,7 +76,7 @@ const limiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
     max: 100 // limit each IP to 100 requests per windowMs
 });
-app.use(limiter);
+app.use('/api/', limiter);
 
 // Compress responses
 console.log('📦 Enabling response compression...');
@@ -79,6 +95,9 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec, {
     customCss: '.swagger-ui .topbar { display: none }',
     customSiteTitle: "Tourism Booking API Documentation"
 }));
+
+// Set static folder
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Welcome route
 app.get('/', (req, res) => {
@@ -101,50 +120,37 @@ app.use('/api/v1/reviews', reviews);
 app.use('/api/v1/bookings', bookings);
 app.use('/api/v1/booking', bookingCom);
 app.use('/api/v1/admin', admin);
+app.use('/api/v1/mongodb-hotels', mongodbHotels);
+app.use('/api/v1/local-services', localServices);
+app.use('/api/v1/restaurants', restaurants);
+app.use('/api/v1/events', events);
 
 // Error handler
-app.use((err, req, res, next) => {
-    console.error('❌ Error:', err);
-    
-    // Log error to ErrorLog model
-    if (err.status !== 404) {
-        const { ErrorLog } = require('./models');
-        ErrorLog.create({
-            type: 'system',
-            message: err.message,
-            stack: err.stack,
-            path: req.path,
-            method: req.method,
-            statusCode: err.status || 500,
-            user: req.user ? req.user.id : null,
-            metadata: {
-                query: req.query,
-                body: req.body,
-                params: req.params
-            }
-        }).catch(console.error);
-    }
-
-    res.status(err.status || 500).json({
-        success: false,
-        error: err.message || 'Server Error'
-    });
-});
+app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
 
-const server = app.listen(PORT, () => {
-    console.log(`
-    🚀 Server is running!
-    🌍 Mode: ${process.env.NODE_ENV}
-    🏃‍♂️ Port: ${PORT}
-    📚 API Docs: http://localhost:${PORT}/api-docs
-    `);
-});
+// Only start the server if we're not in test mode
+if (process.env.NODE_ENV !== 'test') {
+    const server = app.listen(PORT, () => {
+        console.log(`
+        🚀 Server is running!
+        🌍 Mode: ${process.env.NODE_ENV}
+        🏃‍♂️ Port: ${PORT}
+        📝 API Documentation: http://localhost:${PORT}/api-docs
+        `);
+    });
+}
+
+module.exports = app;
 
 // Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
     console.error('❌ Unhandled Rejection:', err.message);
     // Close server & exit process
-    server.close(() => process.exit(1));
+    if (process.env.NODE_ENV !== 'test') {
+        if (server) {
+            server.close(() => process.exit(1));
+        }
+    }
 }); 

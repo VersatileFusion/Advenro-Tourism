@@ -8,7 +8,7 @@
 A full-stack tourism booking platform with user profiles, reviews, and real-time notifications.
 
 ## 🌟 Live Demo
-[View Live Demo](https://your-demo-url.com) *(Coming Soon)*
+[View Live Demo](https://tourism-booking.herokuapp.com) *(Coming Soon)*
 
 ## 🚀 Features
 
@@ -35,8 +35,8 @@ Before you begin, ensure you have the following installed:
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/tourism-booking.git
-cd tourism-booking
+git clone https://github.com/VersatileFusion/Advenro---tourism-booking.git
+cd Advenro---tourism-booking
 ```
 
 2. Install dependencies:
@@ -163,7 +163,8 @@ This project is licensed under the ISC License - see the [LICENSE](LICENSE) file
 
 For support:
 - Email: erwork11@gmail.com
-- [Join our Slack channel](your-slack-invite-link)
-- [Report Issues](https://github.com/yourusername/tourism-booking/issues)
+- [Join our Slack channel](https://tourism-booking.slack.com)
+- [Report Issues](https://github.com/VersatileFusion/Advenro---tourism-booking/issues)
 
-## ⭐ Show your support 
+## ⭐ Show your support
+If you found this project helpful, please give it a ⭐️! 

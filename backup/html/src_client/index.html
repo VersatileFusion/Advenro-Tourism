@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tourism Explorer - Your Ultimate Travel Companion</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="/">
+                <i class="fas fa-globe-americas"></i> Tourism Explorer
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="hotels.html">Hotels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="destinations.html">Destinations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="deals.html">Special Deals</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="contact.html">Contact</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section text-white position-relative">
+        <div class="container py-5">
+            <div class="row min-vh-75 align-items-center">
+                <div class="col-lg-8 mx-auto text-center">
+                    <h1 class="display-3 mb-4">Discover Your Perfect Stay</h1>
+                    <p class="lead mb-5">Find and book the best hotels worldwide with our exclusive deals and personalized recommendations.</p>
+                    
+                    <!-- Search Form -->
+                    <div class="card bg-white p-4 shadow-lg">
+                        <form id="mainSearchForm">
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="form-floating">
+                                        <input type="text" class="form-control" id="destinationInput" placeholder="Where are you going?">
+                                        <label for="destinationInput">Destination</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" id="checkInDate">
+                                        <label for="checkInDate">Check-in</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-floating">
+                                        <input type="date" class="form-control" id="checkOutDate">
+                                        <label for="checkOutDate">Check-out</label>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="submit" class="btn btn-primary h-100 w-100">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container py-5">
+        <!-- Featured Destinations -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Featured Destinations</h2>
+                <a href="destinations.html" class="btn btn-outline-primary">View All</a>
+            </div>
+            <div class="row g-4" id="featuredDestinations">
+                <!-- Featured destinations will be loaded here -->
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Special Offers -->
+        <section class="mb-5">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h2>Special Offers</h2>
+                <a href="deals.html" class="btn btn-outline-primary">View All Deals</a>
+            </div>
+            <div class="row g-4" id="specialOffers">
+                <!-- Special offers will be loaded here -->
+                <div class="col-12 text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why Choose Us -->
+        <section class="mb-5 py-5 bg-light rounded">
+            <div class="container">
+                <h2 class="text-center mb-5">Why Choose Tourism Explorer</h2>
+                <div class="row g-4">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-hotel fa-3x text-primary mb-3"></i>
+                            <h5>Best Selection</h5>
+                            <p class="text-muted">Over 50,000 hotels worldwide to choose from</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-tag fa-3x text-primary mb-3"></i>
+                            <h5>Best Prices</h5>
+                            <p class="text-muted">Guaranteed lowest rates and exclusive deals</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-headset fa-3x text-primary mb-3"></i>
+                            <h5>24/7 Support</h5>
+                            <p class="text-muted">Round-the-clock assistance for your bookings</p>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <i class="fas fa-shield-alt fa-3x text-primary mb-3"></i>
+                            <h5>Secure Booking</h5>
+                            <p class="text-muted">Safe and secure payment processing</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Newsletter -->
+        <section class="py-5">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body p-5 text-center">
+                            <h3>Subscribe to Our Newsletter</h3>
+                            <p class="mb-4">Get exclusive deals and travel inspiration delivered to your inbox</p>
+                            <form id="newsletterForm" class="row justify-content-center">
+                                <div class="col-md-8">
+                                    <div class="input-group">
+                                        <input type="email" class="form-control" placeholder="Enter your email">
+                                        <button class="btn btn-light" type="submit">Subscribe</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <h5>About Us</h5>
+                    <p>Discover the world with our premium travel services and exclusive hotel deals.</p>
+                </div>
+                <div class="col-md-4">
+                    <h5>Quick Links</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="about.html" class="text-white">About</a></li>
+                        <li><a href="terms.html" class="text-white">Terms & Conditions</a></li>
+                        <li><a href="faq.html" class="text-white">FAQs</a></li>
+                        <li><a href="contact.html" class="text-white">Contact</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-4">
+                    <h5>Follow Us</h5>
+                    <div class="social-links">
+                        <a href="#" class="text-white me-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white me-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="scripts/main.js"></script>
+</body>
+</html> 

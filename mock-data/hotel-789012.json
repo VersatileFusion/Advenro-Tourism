@@ -1,0 +1,69 @@
+{
+  "success": true,
+  "data": {
+    "id": "789012",
+    "name": "Another Mock Hotel",
+    "description": "A modern hotel in London with excellent amenities",
+    "location": {
+      "city": "London",
+      "country": "United Kingdom",
+      "address": "456 Baker Street",
+      "latitude": 51.5237,
+      "longitude": 0.1582
+    },
+    "price": 200,
+    "currency": "USD",
+    "rating": 9.2,
+    "stars": 5,
+    "images": [
+      "https://example.com/hotel3.jpg",
+      "https://example.com/hotel4.jpg"
+    ],
+    "amenities": [
+      "WiFi",
+      "Gym",
+      "Bar",
+      "Restaurant"
+    ],
+    "rooms": [
+      {
+        "id": "room1",
+        "name": "Standard Room",
+        "description": "Comfortable room with modern decor",
+        "price": 200,
+        "capacity": 2,
+        "amenities": [
+          "TV",
+          "Safe",
+          "Minibar"
+        ]
+      },
+      {
+        "id": "room2",
+        "name": "Executive Suite",
+        "description": "Spacious suite with city view",
+        "price": 350,
+        "capacity": 2,
+        "amenities": [
+          "TV",
+          "Safe",
+          "Minibar",
+          "Work Desk"
+        ]
+      }
+    ],
+    "reviews": [
+      {
+        "id": "review1",
+        "rating": 9.5,
+        "title": "Perfect stay",
+        "comment": "One of the best hotels I have ever stayed in.",
+        "date": "2024-01-20",
+        "reviewer": {
+          "name": "Emma S.",
+          "country": "Germany"
+        }
+      }
+    ]
+  }
+}

@@ -1,4 +1,4 @@
-const { validationResult, check } = require('express-validator');
+const { validationResult, check, body } = require('express-validator');
 
 // Validation schemas
 const schemas = {
@@ -35,18 +35,53 @@ const schemas = {
             .withMessage('Password is required')
     ],
     updateProfile: [
-        check('name')
+        body('name')
+            .optional()
             .trim()
-            .notEmpty()
-            .withMessage('Name is required')
-            .isLength({ max: 50 })
-            .withMessage('Name cannot be more than 50 characters'),
-        check('email')
-            .trim()
-            .notEmpty()
-            .withMessage('Email is required')
+            .isLength({ min: 2 })
+            .withMessage('Name must be at least 2 characters long'),
+        body('phone')
+            .optional()
+            .matches(/^\+?[\d\s-]+$/)
+            .withMessage('Invalid phone number format'),
+        body('address.street').optional().trim(),
+        body('address.city').optional().trim(),
+        body('address.state').optional().trim(),
+        body('address.zipCode').optional().trim(),
+        body('address.country').optional().trim()
+    ],
+    updateEmail: [
+        body('email')
             .isEmail()
-            .withMessage('Please provide a valid email')
+            .withMessage('Please provide a valid email'),
+        body('password')
+            .notEmpty()
+            .withMessage('Please provide your current password')
+    ],
+    updatePassword: [
+        body('currentPassword')
+            .notEmpty()
+            .withMessage('Please provide your current password'),
+        body('newPassword')
+            .isLength({ min: 8 })
+            .withMessage('Password must be at least 8 characters long')
+            .matches(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)
+            .withMessage('Password must contain at least one uppercase letter, one lowercase letter, one number and one special character')
+    ],
+    enable2FA: [
+        body('token')
+            .notEmpty()
+            .withMessage('Please provide the authentication code')
+            .isLength({ min: 6, max: 6 })
+            .withMessage('Authentication code must be 6 digits')
+            .matches(/^\d+$/)
+            .withMessage('Authentication code must contain only numbers')
+    ],
+    updateUser: [
+        body('name').optional().trim().isLength({ min: 2 }),
+        body('email').optional().isEmail(),
+        body('role').optional().isIn(['user', 'admin', 'guide']),
+        body('status').optional().isIn(['active', 'inactive', 'suspended'])
     ],
     createBooking: [
         check('item')
@@ -100,39 +135,23 @@ const schemas = {
             .withMessage('Status is required')
             .isIn(['pending', 'confirmed', 'cancelled'])
             .withMessage('Invalid booking status')
-    ],
-    updateUser: [
-        check('name')
-            .optional()
-            .trim()
-            .isLength({ max: 50 })
-            .withMessage('Name cannot be more than 50 characters'),
-        check('email')
-            .optional()
-            .trim()
-            .isEmail()
-            .withMessage('Please provide a valid email'),
-        check('role')
-            .optional()
-            .isIn(['user', 'admin', 'hotel_owner'])
-            .withMessage('Invalid role')
     ]
 };
 
 // Middleware to validate request data
 const validateRequest = (validations) => {
     return async (req, res, next) => {
-        // Execute all validations
         await Promise.all(validations.map(validation => validation.run(req)));
 
         const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            return res.status(400).json({
-                success: false,
-                errors: errors.array()
-            });
+        if (errors.isEmpty()) {
+            return next();
         }
-        next();
+
+        res.status(400).json({
+            success: false,
+            errors: errors.array()
+        });
     };
 };
 

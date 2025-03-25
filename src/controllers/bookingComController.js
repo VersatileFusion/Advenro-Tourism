@@ -48,11 +48,59 @@ exports.cacheLimiter = createRateLimiter({
 // @route   GET /api/v1/booking/hotels/search
 // @access  Public
 exports.searchHotels = asyncHandler(async (req, res, next) => {
-    const hotels = await bookingComService.searchHotels(req.query);
-    res.status(200).json({
-        success: true,
-        data: hotels
-    });
+    if (!req.query.destId || !req.query.checkIn || !req.query.checkOut) {
+        return next(new ErrorResponse('Please provide destination ID, check-in and check-out dates', 400));
+    }
+
+    try {
+        // Validate dates before calling the service
+        const checkInDate = new Date(req.query.checkIn);
+        const checkOutDate = new Date(req.query.checkOut);
+        
+        if (isNaN(checkInDate.getTime()) || isNaN(checkOutDate.getTime())) {
+            return next(new ErrorResponse('Invalid date format. Please use YYYY-MM-DD format', 400));
+        }
+
+        if (checkInDate >= checkOutDate) {
+            return next(new ErrorResponse('Check-out date must be after check-in date', 400));
+        }
+
+        const hotels = await bookingComService.searchHotels(req.query);
+        
+        if (!Array.isArray(hotels)) {
+            return next(new ErrorResponse('Invalid response format from search service', 500));
+        }
+
+        res.status(200).json({
+            success: true,
+            count: hotels.length,
+            data: hotels
+        });
+    } catch (error) {
+        // Enhanced error handling
+        console.error('Hotel search error:', error.message);
+        
+        // Handle validation errors
+        if (error.message.includes('Invalid date format')) {
+            return next(new ErrorResponse(error.message, 400));
+        }
+        
+        // Handle API errors with proper response structure
+        if (error.response && error.response.data) {
+            return next(new ErrorResponse(
+                error.response.data.message || 'API Error', 
+                error.response.status || 500
+            ));
+        }
+        
+        // Handle network or timeout errors
+        if (error.code === 'ECONNREFUSED' || error.code === 'ETIMEDOUT') {
+            return next(new ErrorResponse('API service unavailable. Please try again later.', 503));
+        }
+        
+        // Handle other errors
+        return next(new ErrorResponse(error.message || 'Internal server error', 500));
+    }
 });
 
 // @desc    Get hotel details

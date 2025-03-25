@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Toast Notifications</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .toast-container {
+            position: fixed;
+            z-index: 9999;
+            padding: 1rem;
+        }
+
+        .toast-container--top-right {
+            top: 0;
+            right: 0;
+        }
+
+        .toast-container--top-left {
+            top: 0;
+            left: 0;
+        }
+
+        .toast-container--bottom-right {
+            bottom: 0;
+            right: 0;
+        }
+
+        .toast-container--bottom-left {
+            bottom: 0;
+            left: 0;
+        }
+
+        .toast {
+            min-width: 250px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Toast container -->
+    <div class="toast-container toast-container--top-right" id="toastContainer"></div>
+
+    <!-- Example buttons to trigger toasts -->
+    <div class="container mt-5">
+        <div class="row">
+            <div class="col">
+                <button class="btn btn-success" onclick="showToast('Success message!', 'success')">
+                    Show Success Toast
+                </button>
+                <button class="btn btn-danger" onclick="showToast('Error occurred!', 'error')">
+                    Show Error Toast
+                </button>
+                <button class="btn btn-warning" onclick="showToast('Warning message!', 'warning')">
+                    Show Warning Toast
+                </button>
+                <button class="btn btn-info" onclick="showToast('Information message!', 'info')">
+                    Show Info Toast
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Toast notification system
+        const ToastManager = {
+            container: document.getElementById('toastContainer'),
+            position: 'top-right',
+            defaultDuration: 5000,
+
+            setPosition(position) {
+                this.container.className = `toast-container toast-container--${position}`;
+                this.position = position;
+            },
+
+            createToast(message, type = 'info', duration = this.defaultDuration) {
+                const toastId = 'toast_' + Date.now();
+                const toastEl = document.createElement('div');
+                
+                const bgClass = type === 'error' ? 'bg-danger' :
+                              type === 'success' ? 'bg-success' :
+                              type === 'warning' ? 'bg-warning' :
+                              'bg-info';
+
+                const textClass = ['warning', 'info'].includes(type) ? 'text-dark' : 'text-white';
+
+                toastEl.className = `toast ${bgClass} ${textClass}`;
+                toastEl.setAttribute('role', 'alert');
+                toastEl.setAttribute('aria-live', 'assertive');
+                toastEl.setAttribute('aria-atomic', 'true');
+                toastEl.id = toastId;
+
+                toastEl.innerHTML = `
+                    <div class="toast-header ${bgClass} ${textClass}">
+                        <strong class="me-auto">${type.charAt(0).toUpperCase() + type.slice(1)}</strong>
+                        <button type="button" class="btn-close ${textClass === 'text-white' ? 'btn-close-white' : ''}" 
+                                data-bs-dismiss="toast" aria-label="Close"></button>
+                    </div>
+                    <div class="toast-body">
+                        ${message}
+                    </div>
+                `;
+
+                this.container.appendChild(toastEl);
+
+                const toast = new bootstrap.Toast(toastEl, {
+                    autohide: true,
+                    delay: duration
+                });
+
+                toast.show();
+
+                // Remove toast element after it's hidden
+                toastEl.addEventListener('hidden.bs.toast', () => {
+                    toastEl.remove();
+                });
+
+                return toastId;
+            }
+        };
+
+        // Helper function to show toasts
+        function showToast(message, type = 'info', duration) {
+            ToastManager.createToast(message, type, duration);
+        }
+
+        // Example of using toast with async operations
+        async function fetchWithToast(url) {
+            try {
+                const response = await fetch(url);
+                if (!response.ok) throw new Error('Network response was not ok');
+                const data = await response.json();
+                showToast('Data fetched successfully!', 'success');
+                return data;
+            } catch (error) {
+                showToast(error.message, 'error');
+                throw error;
+            }
+        }
+
+        // Example of changing toast position
+        function changeToastPosition(position) {
+            ToastManager.setPosition(position);
+        }
+    </script>
+</body>
+</html> 

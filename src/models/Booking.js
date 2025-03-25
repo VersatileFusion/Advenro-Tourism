@@ -38,33 +38,70 @@ const mongoose = require('mongoose');
  *           enum: [pending, paid, refunded]
  */
 
-const bookingSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.ObjectId,
+const passengerSchema = new mongoose.Schema({
+    firstName: {
+        type: String,
+        required: true
+    },
+    lastName: {
+        type: String,
+        required: true
+    },
+    dateOfBirth: {
+        type: Date,
+        required: true
+    },
+    passportNumber: {
+        type: String,
+        required: true
+    },
+    passportExpiry: {
+        type: Date,
+        required: true
+    },
+    nationality: {
+        type: String,
+        required: true
+    },
+    seatNumber: String
+});
+
+const contactInfoSchema = new mongoose.Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: [true, 'Booking must belong to a user']
+        required: true
     },
-    itemId: {
-        type: mongoose.Schema.ObjectId,
-        required: [true, 'Booking must have a reference item'],
-        refPath: 'bookingType'
+    email: {
+        type: String,
+        required: true
     },
-    bookingType: {
+    phone: {
+        type: String,
+        required: true
+    },
+    address: {
+        street: String,
+        city: String,
+        state: String,
+        country: String,
+        zipCode: String
+    }
+});
+
+const bookingSchema = new mongoose.Schema({
+    flight: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Flight',
+        required: true
+    },
+    bookingNumber: {
         type: String,
         required: true,
-        enum: ['Hotel', 'Flight', 'Tour']
+        unique: true
     },
-    startDate: {
-        type: Date,
-        required: [true, 'Booking must have a start date']
-    },
-    endDate: {
-        type: Date
-    },
-    totalPrice: {
-        type: Number,
-        required: [true, 'Booking must have a price']
-    },
+    passengers: [passengerSchema],
+    contactInfo: contactInfoSchema,
     status: {
         type: String,
         enum: ['pending', 'confirmed', 'cancelled', 'completed'],
@@ -72,50 +109,63 @@ const bookingSchema = new mongoose.Schema({
     },
     paymentStatus: {
         type: String,
-        enum: ['pending', 'paid', 'refunded'],
+        enum: ['pending', 'paid', 'refunded', 'failed'],
         default: 'pending'
     },
-    guests: {
-        adults: {
-            type: Number,
-            default: 1
-        },
-        children: {
-            type: Number,
-            default: 0
-        }
+    totalPrice: {
+        type: Number,
+        required: true
     },
-    specialRequests: {
-        type: String
+    paymentMethod: {
+        type: String,
+        enum: ['credit_card', 'debit_card', 'bank_transfer', 'paypal'],
+        required: true
     },
+    paymentDetails: {
+        transactionId: String,
+        paymentDate: Date
+    },
+    specialRequests: [{
+        type: String,
+        enum: ['wheelchair', 'special_meal', 'extra_baggage', 'priority_checkin']
+    }],
+    cancellationReason: String,
+    cancellationDate: Date,
+    refundAmount: Number,
     createdAt: {
         type: Date,
         default: Date.now
+    },
+    updatedAt: {
+        type: Date,
+        default: Date.now
     }
-}, {
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
 });
 
-// Create indexes for common queries
-bookingSchema.index({ user: 1, startDate: -1 });
-bookingSchema.index({ status: 1 });
-bookingSchema.index({ itemId: 1, bookingType: 1 });
-
-// Middleware to populate referenced item
-bookingSchema.pre(/^find/, function(next) {
-    this.populate({
-        path: 'user',
-        select: 'name email'
-    });
+// Update the updatedAt timestamp before saving
+bookingSchema.pre('save', function(next) {
+    this.updatedAt = Date.now();
     next();
 });
 
-// Virtual property to calculate duration
-bookingSchema.virtual('duration').get(function() {
-    if (!this.endDate) return 1;
-    const days = Math.ceil((this.endDate - this.startDate) / (1000 * 60 * 60 * 24));
-    return days > 0 ? days : 1;
+// Generate unique booking number
+bookingSchema.pre('save', async function(next) {
+    if (!this.bookingNumber) {
+        const date = new Date();
+        const year = date.getFullYear().toString().slice(-2);
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+        this.bookingNumber = `BK${year}${month}${random}`;
+    }
+    next();
 });
 
-module.exports = { schema: bookingSchema }; 
+// Indexes for better query performance
+bookingSchema.index({ bookingNumber: 1 });
+bookingSchema.index({ 'contactInfo.userId': 1 });
+bookingSchema.index({ status: 1 });
+bookingSchema.index({ createdAt: -1 });
+
+const Booking = mongoose.model('Booking', bookingSchema);
+
+module.exports = Booking; 
