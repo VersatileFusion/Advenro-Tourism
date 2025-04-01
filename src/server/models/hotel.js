@@ -1,191 +1,124 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const hotelSchema = new mongoose.Schema({
-    name: {
-        type: String,
-        required: [true, 'Hotel name is required'],
-        trim: true,
-        minlength: [2, 'Name must be at least 2 characters long'],
-        maxlength: [100, 'Name cannot exceed 100 characters']
+  name: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  description: {
+    type: String,
+    required: true,
+  },
+  address: {
+    type: String,
+    required: true,
+  },
+  city: {
+    type: String,
+    required: true,
+  },
+  country: {
+    type: String,
+    required: true,
+  },
+  zipCode: {
+    type: String,
+  },
+  geoLocation: {
+    latitude: {
+      type: Number,
     },
-    description: {
-        type: String,
-        required: [true, 'Description is required'],
-        minlength: [10, 'Description must be at least 10 characters long'],
-        maxlength: [2000, 'Description cannot exceed 2000 characters']
+    longitude: {
+      type: Number,
     },
-    location: {
-        type: {
-            coordinates: {
-                type: [Number],
-                required: [true, 'Coordinates are required'],
-                validate: {
-                    validator: function(v) {
-                        return v.length === 2;
-                    },
-                    message: 'Coordinates must be [longitude, latitude]'
-                }
-            },
-            country: {
-                type: String,
-                required: [true, 'Country is required']
-            },
-            city: {
-                type: String,
-                required: [true, 'City is required']
-            },
-            address: {
-                type: String,
-                required: [true, 'Address is required']
-            }
-        },
-        required: [true, 'Location is required']
+  },
+  price: {
+    type: Number,
+    required: true,
+    min: 0,
+  },
+  rating: {
+    type: Number,
+    default: 0,
+    min: 0,
+    max: 5,
+  },
+  images: {
+    type: [String],
+    default: [],
+  },
+  amenities: {
+    type: [String],
+    default: [],
+  },
+  propertyType: {
+    type: String,
+    enum: ["Hotel", "Resort", "Apartment", "Villa", "Hostel", "Guesthouse"],
+    default: "Hotel",
+  },
+  starRating: {
+    type: Number,
+    min: 1,
+    max: 5,
+    default: 3,
+  },
+  checkInTime: {
+    type: String,
+    default: "14:00",
+  },
+  checkOutTime: {
+    type: String,
+    default: "12:00",
+  },
+  policies: {
+    petsAllowed: {
+      type: Boolean,
+      default: false,
     },
-    owner: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Hotel owner is required']
+    smokingAllowed: {
+      type: Boolean,
+      default: false,
     },
-    images: [{
-        type: String,
-        validate: {
-            validator: function(v) {
-                return /^https?:\/\/.*/.test(v);
-            },
-            message: 'Image URL must be a valid URL'
-        }
-    }],
-    amenities: [{
-        type: String,
-        enum: [
-            'wifi', 'parking', 'pool', 'spa', 'gym',
-            'restaurant', 'bar', 'room-service', 'laundry',
-            'air-conditioning', 'heating', 'tv', 'minibar'
-        ]
-    }],
-    category: {
-        type: String,
-        required: [true, 'Hotel category is required'],
-        enum: ['hotel', 'resort', 'apartment', 'villa', 'hostel']
+    cancellationPolicy: {
+      type: String,
+      default: "Flexible",
     },
-    starRating: {
-        type: Number,
-        min: [1, 'Rating must be at least 1'],
-        max: [5, 'Rating cannot exceed 5']
-    },
-    contactInfo: {
-        phone: {
-            type: String,
-            validate: {
-                validator: function(v) {
-                    return /^\+?[1-9]\d{1,14}$/.test(v);
-                },
-                message: 'Please enter a valid phone number'
-            }
-        },
-        email: {
-            type: String,
-            match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
-        },
-        website: {
-            type: String,
-            match: [/^https?:\/\/.*/, 'Please enter a valid URL']
-        }
-    },
-    policies: {
-        checkIn: String,
-        checkOut: String,
-        cancellation: String,
-        houseRules: [String]
-    },
-    rooms: [{
-        name: {
-            type: String,
-            required: [true, 'Room name is required'],
-            trim: true
-        },
-        type: {
-            type: String,
-            required: [true, 'Room type is required'],
-            enum: ['single', 'double', 'twin', 'suite', 'deluxe']
-        },
-        description: String,
-        capacity: {
-            type: Number,
-            required: [true, 'Room capacity is required'],
-            min: [1, 'Capacity must be at least 1']
-        },
-        price: {
-            type: Number,
-            required: [true, 'Room price is required'],
-            min: [0, 'Price cannot be negative']
-        },
-        amenities: [String],
-        images: [String],
-        size: Number,
-        bedType: String,
-        availability: {
-            startDate: Date,
-            endDate: Date,
-            quantity: {
-                type: Number,
-                min: 0
-            }
-        },
-        bookings: [{
-            checkIn: Date,
-            checkOut: Date,
-            guest: {
-                type: mongoose.Schema.Types.ObjectId,
-                ref: 'User'
-            },
-            status: {
-                type: String,
-                enum: ['pending', 'confirmed', 'cancelled'],
-                default: 'pending'
-            }
-        }]
-    }],
-    reviews: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Review'
-    }],
-    rating: {
-        type: Number,
-        min: 0,
-        max: 5,
-        default: 0
-    },
-    isActive: {
-        type: Boolean,
-        default: true
-    },
-    status: {
-        type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
-    }
-}, {
-    timestamps: true
+  },
+  contactDetails: {
+    phone: String,
+    email: String,
+    website: String,
+  },
+  featured: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-// Create indexes
-hotelSchema.index({ name: 'text', description: 'text' });
-hotelSchema.index({ 'location.coordinates': '2dsphere' });
+// Update the updatedAt field before saving
+hotelSchema.pre("save", function (next) {
+  this.updatedAt = Date.now();
+  next();
+});
 
-// Calculate average rating when reviews are modified
-hotelSchema.methods.calculateAverageRating = async function() {
-    const reviews = await mongoose.model('Review').find({ hotel: this._id });
-    if (reviews.length === 0) {
-        this.rating = 0;
-    } else {
-        const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-        this.rating = Math.round((sum / reviews.length) * 10) / 10;
-    }
-    await this.save();
-};
+// Create a text index for search functionality
+hotelSchema.index({
+  name: "text",
+  description: "text",
+  city: "text",
+  country: "text",
+});
 
 // Check if model exists before compiling
-const Hotel = mongoose.models.Hotel || mongoose.model('Hotel', hotelSchema);
+const Hotel = mongoose.models.Hotel || mongoose.model("Hotel", hotelSchema);
 
-module.exports = Hotel; 
+module.exports = Hotel;

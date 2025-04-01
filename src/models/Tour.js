@@ -145,6 +145,10 @@ const tourSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    ratingsTotal: {
+        type: Number,
+        default: 0
+    },
     reviews: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Review'
@@ -186,7 +190,7 @@ tourSchema.index({ slug: 1 });
 tourSchema.index({ startLocation: '2dsphere' });
 
 // Virtual populate reviews
-tourSchema.virtual('reviews', {
+tourSchema.virtual('tourReviews', {
     ref: 'Review',
     foreignField: 'tour',
     localField: '_id'
@@ -199,11 +203,11 @@ tourSchema.virtual('discountedPrice').get(function() {
 
 // Document middleware to run before .save() and .create()
 tourSchema.pre('save', function(next) {
-    // Update ratings average
-    if (this.reviews && this.reviews.length > 0) {
-        const ratings = this.reviews.map(review => review.rating);
-        this.ratingsAverage = ratings.reduce((acc, curr) => acc + curr, 0) / ratings.length;
-        this.ratingsQuantity = ratings.length;
+    // Update ratings average based on ratings already stored in the document
+    // Not trying to access virtual reviews
+    if (this.ratingsQuantity > 0) {
+        // Using the stored ratings data instead of virtual reviews
+        this.ratingsAverage = this.ratingsTotal / this.ratingsQuantity;
     }
     next();
 });

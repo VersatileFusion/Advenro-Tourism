@@ -9,6 +9,8 @@ const upload = require('../middleware/upload');
 // Public routes
 router.get('/', hotelController.getAllHotels);
 router.get('/search', hotelController.searchHotels);
+router.get('/featured', hotelController.getFeaturedHotels);
+router.get('/popular-destinations', hotelController.getPopularDestinations);
 router.get('/:id', hotelController.getHotelById);
 router.get('/:id/rooms', hotelController.getHotelRooms);
 router.get('/:id/reviews', hotelController.getHotelReviews);

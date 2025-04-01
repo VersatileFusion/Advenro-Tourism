@@ -1,0 +1,122 @@
+<div class="review-form-container">
+    <h3>Write a Review</h3>
+    <form id="review-form">
+        <div class="form-group">
+            <label>Rating</label>
+            <div class="rating-input">
+                <i class="fas fa-star" data-rating="1"></i>
+                <i class="fas fa-star" data-rating="2"></i>
+                <i class="fas fa-star" data-rating="3"></i>
+                <i class="fas fa-star" data-rating="4"></i>
+                <i class="fas fa-star" data-rating="5"></i>
+            </div>
+            <input type="hidden" id="rating" name="rating" required>
+        </div>
+        <div class="form-group">
+            <label for="review-text">Your Review</label>
+            <textarea id="review-text" name="review" rows="5" required></textarea>
+        </div>
+        <div class="form-group">
+            <label>Photos (optional)</label>
+            <div class="photo-upload">
+                <input type="file" id="review-photos" multiple accept="image/*">
+                <label for="review-photos" class="upload-btn">
+                    <i class="fas fa-camera"></i>
+                    Add Photos
+                </label>
+            </div>
+            <div class="photo-preview"></div>
+        </div>
+        <button type="submit" class="submit-review">Submit Review</button>
+    </form>
+</div>
+
+<style>
+    .review-form-container {
+        background-color: #f9f9f9;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+    
+    .form-group {
+        margin-bottom: 16px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+    
+    .rating-input {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 8px;
+    }
+    
+    .rating-input i {
+        color: #ccc;
+        font-size: 24px;
+        cursor: pointer;
+    }
+    
+    .rating-input i.active {
+        color: #f8c51c;
+    }
+    
+    textarea {
+        width: 100%;
+        padding: 8px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+    }
+    
+    .photo-upload {
+        display: flex;
+        align-items: center;
+    }
+    
+    .photo-upload input {
+        display: none;
+    }
+    
+    .upload-btn {
+        background-color: #f0f0f0;
+        border: 1px solid #ddd;
+        padding: 8px 16px;
+        border-radius: 4px;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .photo-preview {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-top: 8px;
+    }
+    
+    .photo-preview img {
+        width: 80px;
+        height: 80px;
+        object-fit: cover;
+        border-radius: 4px;
+    }
+    
+    .submit-review {
+        background-color: #4a6cf7;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: 500;
+    }
+    
+    .submit-review:hover {
+        background-color: #3a5ce5;
+    }
+</style> 

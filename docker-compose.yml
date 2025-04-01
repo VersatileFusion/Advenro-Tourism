@@ -1,0 +1,27 @@
+version: '3'
+
+services:
+  # Tourism API application
+  app:
+    build: .
+    restart: always
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env
+    depends_on:
+      - mongo
+    volumes:
+      - ./public:/app/public # For persistent storage of uploads
+
+  # MongoDB database
+  mongo:
+    image: mongo:latest
+    restart: always
+    volumes:
+      - mongo_data:/data/db
+    ports:
+      - "27017:27017" # Comment this out in production if you don't need direct access
+
+volumes:
+  mongo_data: # Persistent storage for MongoDB data 

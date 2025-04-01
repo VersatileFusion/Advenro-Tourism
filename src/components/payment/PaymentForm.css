@@ -1,0 +1,83 @@
+.payment-form-container {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f8f9fa;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.payment-form-container h3 {
+  color: #32325d;
+  margin-bottom: 20px;
+  font-weight: 600;
+}
+
+.amount {
+  font-size: 18px;
+  margin-bottom: 20px;
+  color: #525f7f;
+  font-weight: 500;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7c93;
+}
+
+.card-element-container {
+  padding: 12px;
+  border: 1px solid #e6e6e6;
+  border-radius: 4px;
+  background-color: white;
+  box-shadow: 0 1px 3px 0 #e6ebf1;
+  transition: box-shadow 150ms ease;
+}
+
+.card-element-container:focus-within {
+  box-shadow: 0 1px 3px 0 #cfd7df;
+}
+
+.pay-button {
+  background-color: #5469d4;
+  color: white;
+  border: 0;
+  padding: 12px 16px;
+  border-radius: 4px;
+  font-weight: 600;
+  cursor: pointer;
+  display: block;
+  width: 100%;
+  font-size: 16px;
+  transition: all 0.2s ease;
+}
+
+.pay-button:hover {
+  background-color: #4a5fc1;
+}
+
+.pay-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.pay-button.loading {
+  background-color: #748aff;
+}
+
+.error-message {
+  color: #e25950;
+  background-color: #f8e4e5;
+  padding: 10px;
+  border-radius: 4px;
+  margin-bottom: 20px;
+  font-size: 14px;
+  border-left: 4px solid #e25950;
+} 

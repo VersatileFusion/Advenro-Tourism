@@ -230,6 +230,6 @@ eventBookingSchema.statics.getBookingStats = async function(eventId) {
   };
 };
 
+// Create and export the model
 const EventBooking = mongoose.model('EventBooking', eventBookingSchema);
-
 module.exports = EventBooking; 

@@ -7,123 +7,142 @@ const {
     updateHotel,
     deleteHotel,
     getHotelsInRadius,
-    getMongoDBHotels
+    getMongoDBHotels,
+    searchHotels,
+    getHotelReviews,
+    getHotelAmenities,
+    getHotelAvailability
 } = require('../controllers/hotelController');
 
 const { authenticate, authorize } = require('../middleware/auth');
 const { hotelValidation } = require('../middleware/validator');
+const { validate } = require('../middleware/validate');
+const { schemas } = require('../middleware/validate');
 
 /**
  * @swagger
- * /hotels:
+ * components:
+ *   schemas:
+ *     Hotel:
+ *       type: object
+ *       required:
+ *         - name
+ *         - description
+ *         - price
+ *         - location
+ *       properties:
+ *         _id:
+ *           type: string
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *         price:
+ *           type: number
+ *         location:
+ *           type: object
+ *         amenities:
+ *           type: array
+ *         images:
+ *           type: array
+ *         rating:
+ *           type: number
+ *         reviews:
+ *           type: array
+ */
+
+/**
+ * @swagger
+ * /api/v1/hotels:
  *   get:
  *     summary: Get all hotels
  *     tags: [Hotels]
  *     parameters:
  *       - in: query
- *         name: minPrice
+ *         name: page
  *         schema:
- *           type: number
- *         description: Minimum price per night
- *       - in: query
- *         name: maxPrice
- *         schema:
- *           type: number
- *         description: Maximum price per night
- *       - in: query
- *         name: city
- *         schema:
- *           type: string
- *         description: City name
+ *           type: integer
+ *         description: Page number
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         description: Number of hotels to return (default 100)
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         description: Page number (for pagination)
- *       - in: query
- *         name: amenities
- *         schema:
- *           type: string
- *         description: Comma-separated list of amenities to filter by
- *       - in: query
- *         name: sort
- *         schema:
- *           type: string
- *         description: Field to sort by (prefix with - for descending)
+ *         description: Number of hotels per page
  *     responses:
  *       200:
  *         description: List of hotels
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 success:
- *                   type: boolean
- *                 count:
- *                   type: integer
- *                 pagination:
- *                   type: object
- *                 data:
- *                   type: array
- *                   items:
- *                     $ref: '#/components/schemas/Hotel'
- *       500:
- *         description: Server error
  */
 router.get('/', getHotels);
 
 /**
  * @swagger
- * /hotels/radius/{zipcode}/{distance}:
+ * /api/v1/hotels/mongodb:
  *   get:
- *     summary: Get hotels within a radius
+ *     summary: Get all MongoDB hotels (public)
  *     tags: [Hotels]
  *     parameters:
- *       - in: path
- *         name: zipcode
- *         required: true
+ *       - in: query
+ *         name: limit
  *         schema:
- *           type: string
- *         description: Zipcode to search from
- *       - in: path
- *         name: distance
- *         required: true
- *         schema:
- *           type: number
- *         description: Distance in miles
+ *           type: integer
+ *         description: Number of hotels to return (default 100)
  *     responses:
  *       200:
- *         description: List of hotels
- *       500:
- *         description: Server error
- */
-router.get('/radius/:zipcode/:distance', getHotelsInRadius);
-
-/**
- * @swagger
- * /hotels/mongodb:
- *   get:
- *     summary: Get hotels from MongoDB Atlas Sample Dataset
- *     tags: [Hotels]
- *     responses:
- *       200:
- *         description: List of hotels from MongoDB sample data
- *       500:
- *         description: Server error
+ *         description: List of all MongoDB hotels
  */
 router.get('/mongodb', getMongoDBHotels);
 
 /**
  * @swagger
- * /hotels/{id}:
+ * /api/v1/hotels/search:
  *   get:
- *     summary: Get a single hotel
+ *     summary: Search hotels
+ *     tags: [Hotels]
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         schema:
+ *           type: string
+ *         description: Search query
+ *     responses:
+ *       200:
+ *         description: Search results
+ */
+router.get('/search', searchHotels);
+
+/**
+ * @swagger
+ * /api/v1/hotels/radius:
+ *   get:
+ *     summary: Get hotels within radius
+ *     tags: [Hotels]
+ *     parameters:
+ *       - in: query
+ *         name: lat
+ *         schema:
+ *           type: number
+ *         description: Latitude
+ *       - in: query
+ *         name: lng
+ *         schema:
+ *           type: number
+ *         description: Longitude
+ *       - in: query
+ *         name: radius
+ *         schema:
+ *           type: number
+ *         description: Radius in kilometers
+ *     responses:
+ *       200:
+ *         description: Hotels within radius
+ */
+router.get('/radius', getHotelsInRadius);
+
+/**
+ * @swagger
+ * /api/v1/hotels/{id}:
+ *   get:
+ *     summary: Get hotel by ID
  *     tags: [Hotels]
  *     parameters:
  *       - in: path
@@ -131,24 +150,82 @@ router.get('/mongodb', getMongoDBHotels);
  *         required: true
  *         schema:
  *           type: string
- *         description: Hotel ID
  *     responses:
  *       200:
  *         description: Hotel details
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Hotel'
- *       404:
- *         description: Hotel not found
- *       500:
- *         description: Server error
  */
 router.get('/:id', getHotel);
 
 /**
  * @swagger
- * /hotels:
+ * /api/v1/hotels/{id}/reviews:
+ *   get:
+ *     summary: Get hotel reviews
+ *     tags: [Hotels]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Hotel reviews
+ */
+router.get('/:id/reviews', getHotelReviews);
+
+/**
+ * @swagger
+ * /api/v1/hotels/{id}/amenities:
+ *   get:
+ *     summary: Get hotel amenities
+ *     tags: [Hotels]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Hotel amenities
+ */
+router.get('/:id/amenities', getHotelAmenities);
+
+/**
+ * @swagger
+ * /api/v1/hotels/{id}/availability:
+ *   get:
+ *     summary: Get hotel availability
+ *     tags: [Hotels]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *         description: Start date (YYYY-MM-DD)
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *         description: End date (YYYY-MM-DD)
+ *     responses:
+ *       200:
+ *         description: Hotel availability
+ */
+router.get('/:id/availability', getHotelAvailability);
+
+// Protected routes
+router.use(authenticate);
+
+/**
+ * @swagger
+ * /api/v1/hotels:
  *   post:
  *     summary: Create a new hotel
  *     tags: [Hotels]
@@ -162,21 +239,15 @@ router.get('/:id', getHotel);
  *             $ref: '#/components/schemas/Hotel'
  *     responses:
  *       201:
- *         description: Created hotel
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
- *       500:
- *         description: Server error
+ *         description: Hotel created successfully
  */
-router.post('/', authenticate, authorize('admin'), hotelValidation, createHotel);
+router.post('/', authorize('admin'), hotelValidation, createHotel);
 
 /**
  * @swagger
- * /hotels/{id}:
- *   put:
- *     summary: Update a hotel
+ * /api/v1/hotels/{id}:
+ *   patch:
+ *     summary: Update hotel
  *     tags: [Hotels]
  *     security:
  *       - bearerAuth: []
@@ -186,7 +257,6 @@ router.post('/', authenticate, authorize('admin'), hotelValidation, createHotel)
  *         required: true
  *         schema:
  *           type: string
- *         description: Hotel ID
  *     requestBody:
  *       required: true
  *       content:
@@ -195,23 +265,15 @@ router.post('/', authenticate, authorize('admin'), hotelValidation, createHotel)
  *             $ref: '#/components/schemas/Hotel'
  *     responses:
  *       200:
- *         description: Updated hotel
- *       400:
- *         description: Validation error
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Hotel not found
- *       500:
- *         description: Server error
+ *         description: Hotel updated successfully
  */
-router.put('/:id', authenticate, authorize('admin'), hotelValidation, updateHotel);
+router.patch('/:id', authorize('admin'), hotelValidation, updateHotel);
 
 /**
  * @swagger
- * /hotels/{id}:
+ * /api/v1/hotels/{id}:
  *   delete:
- *     summary: Delete a hotel
+ *     summary: Delete hotel
  *     tags: [Hotels]
  *     security:
  *       - bearerAuth: []
@@ -221,17 +283,10 @@ router.put('/:id', authenticate, authorize('admin'), hotelValidation, updateHote
  *         required: true
  *         schema:
  *           type: string
- *         description: Hotel ID
  *     responses:
  *       200:
- *         description: Hotel deleted
- *       401:
- *         description: Unauthorized
- *       404:
- *         description: Hotel not found
- *       500:
- *         description: Server error
+ *         description: Hotel deleted successfully
  */
-router.delete('/:id', authenticate, authorize('admin'), deleteHotel);
+router.delete('/:id', authorize('admin'), deleteHotel);
 
 module.exports = router; 

@@ -4,6 +4,10 @@ const ErrorResponse = require('../utils/errorResponse');
 const sendEmail = require('../utils/sendEmail');
 const crypto = require('crypto');
 const path = require('path');
+const Newsletter = require('../models/newsletter');
+const jwt = require('jsonwebtoken');
+const bcrypt = require('bcryptjs');
+const { validationResult } = require('express-validator');
 
 // @desc    Get current user profile
 // @route   GET /api/v1/users/me
@@ -210,4 +214,179 @@ const sendTokenResponse = (user, statusCode, res) => {
         .status(statusCode)
         .cookie('token', token, options)
         .json({ success: true, token });
+};
+
+/**
+ * Subscribe a user to the newsletter
+ * @param {string} email - User's email address
+ * @returns {Promise<void>}
+ * @throws {Error} If email is invalid or already subscribed
+ */
+const subscribeNewsletter = async (email) => {
+    // Validate email format
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        throw new Error('Invalid email format');
+    }
+
+    // Check if email is already subscribed
+    const existingSubscription = await Newsletter.findOne({ email });
+    if (existingSubscription) {
+        throw new Error('Email already subscribed');
+    }
+
+    // Create new subscription
+    await Newsletter.create({
+        email,
+        subscribedAt: new Date(),
+        status: 'active'
+    });
+};
+
+// Register new user
+exports.register = async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+
+        const { name, email, password } = req.body;
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+        if (user) {
+            return res.status(400).json({ message: 'User already exists' });
+        }
+
+        // Create new user
+        user = new User({
+            name,
+            email,
+            password
+        });
+
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        user.password = await bcrypt.hash(password, salt);
+
+        await user.save();
+
+        // Create JWT token
+        const payload = {
+            user: {
+                id: user.id
+            }
+        };
+
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' },
+            (err, token) => {
+                if (err) throw err;
+                res.json({ token });
+            }
+        );
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// Login user
+exports.login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Verify password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
+        // Create JWT token
+        const payload = {
+            user: {
+                id: user.id
+            }
+        };
+
+        jwt.sign(
+            payload,
+            process.env.JWT_SECRET,
+            { expiresIn: '24h' },
+            (err, token) => {
+                if (err) throw err;
+                res.json({ token });
+            }
+        );
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// Get user profile
+exports.getProfile = async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// Update user profile
+exports.updateProfile = async (req, res) => {
+    try {
+        const { name, email } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (name) user.name = name;
+        if (email) user.email = email;
+
+        await user.save();
+        res.json(user);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).send('Server error');
+    }
+};
+
+// Subscribe to newsletter
+exports.subscribeNewsletter = async (req, res) => {
+    try {
+        const { email } = req.body;
+
+        // Validate email
+        if (!email || !email.includes('@')) {
+            return res.status(400).json({ message: 'Please provide a valid email address' });
+        }
+
+        // Check if already subscribed
+        let subscription = await Newsletter.findOne({ email });
+        if (subscription) {
+            return res.status(400).json({ message: 'Email already subscribed to newsletter' });
+        }
+
+        // Create new subscription
+        subscription = new Newsletter({
+            email,
+            subscribedAt: new Date()
+        });
+
+        await subscription.save();
+        res.status(201).json({ message: 'Successfully subscribed to newsletter' });
+    } catch (err) {
+        console.error('Newsletter subscription error:', err);
+        res.status(500).json({ message: 'Error subscribing to newsletter' });
+    }
 }; 

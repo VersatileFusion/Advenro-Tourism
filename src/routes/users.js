@@ -1,24 +1,100 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const { authenticate, authorize } = require('../middleware/auth');
-const { validate } = require('../middleware/validate');
-const { schemas } = require('../middleware/validate');
-const userController = require('../controllers/user.controller');
+const { check } = require("express-validator");
+const auth = require("../middleware/auth");
+const {
+  register,
+  login,
+  getProfile,
+  updateProfile,
+  subscribeNewsletter,
+} = require("../controllers/userController");
 
-// Profile routes
-router.get('/me', authenticate, userController.getProfile);
-router.put('/profile', authenticate, validate(schemas.updateProfile), userController.updateProfile);
-router.put('/email', authenticate, validate(schemas.updateEmail), userController.updateEmail);
-router.put('/password', authenticate, validate(schemas.updatePassword), userController.updatePassword);
-router.post('/2fa/setup', authenticate, userController.setup2FA);
-router.put('/2fa/enable', authenticate, validate(schemas.enable2FA), userController.enable2FA);
-router.put('/avatar', authenticate, userController.updateAvatar);
+const {
+  getFavorites,
+  addFavorite,
+  removeFavorite,
+} = require("../controllers/userFavoritesController");
 
-// Admin routes
-router.get('/', authenticate, authorize('admin'), userController.getAllUsers);
-router.get('/stats', authenticate, authorize('admin'), userController.getUserStats);
-router.get('/:id', authenticate, authorize('admin'), userController.getUserById);
-router.put('/:id', authenticate, authorize('admin'), validate(schemas.updateUser), userController.updateUser);
-router.delete('/:id', authenticate, authorize('admin'), userController.deleteUser);
+const {
+  getAllUserBookings,
+  getBookingById,
+  cancelBooking,
+} = require("../controllers/userBookingsController");
 
-module.exports = router; 
+// @route   POST api/users/register
+// @desc    Register user
+// @access  Public
+router.post(
+  "/register",
+  [
+    check("name", "Name is required").not().isEmpty(),
+    check("email", "Please include a valid email").isEmail(),
+    check(
+      "password",
+      "Please enter a password with 6 or more characters"
+    ).isLength({ min: 6 }),
+  ],
+  register
+);
+
+// @route   POST api/users/login
+// @desc    Login user
+// @access  Public
+router.post(
+  "/login",
+  [
+    check("email", "Please include a valid email").isEmail(),
+    check("password", "Password is required").exists(),
+  ],
+  login
+);
+
+// @route   GET api/users/profile
+// @desc    Get user profile
+// @access  Private
+router.get("/profile", auth, getProfile);
+
+// @route   PUT api/users/profile
+// @desc    Update user profile
+// @access  Private
+router.put("/profile", auth, updateProfile);
+
+// @route   POST api/users/newsletter/subscribe
+// @desc    Subscribe to newsletter
+// @access  Public
+router.post("/newsletter/subscribe", subscribeNewsletter);
+
+// Favorites Routes
+// @route   GET api/users/favorites
+// @desc    Get user favorites
+// @access  Private
+router.get("/favorites", auth, getFavorites);
+
+// @route   POST api/users/favorites/:itemType/:itemId
+// @desc    Add an item to favorites
+// @access  Private
+router.post("/favorites/:itemType/:itemId", auth, addFavorite);
+
+// @route   DELETE api/users/favorites/:itemType/:itemId
+// @desc    Remove an item from favorites
+// @access  Private
+router.delete("/favorites/:itemType/:itemId", auth, removeFavorite);
+
+// Bookings Routes
+// @route   GET api/users/bookings
+// @desc    Get all user bookings across all booking types
+// @access  Private
+router.get("/bookings", auth, getAllUserBookings);
+
+// @route   GET api/users/bookings/:id
+// @desc    Get booking details by ID
+// @access  Private
+router.get("/bookings/:id", auth, getBookingById);
+
+// @route   PUT api/users/bookings/:id/cancel
+// @desc    Cancel a booking
+// @access  Private
+router.put("/bookings/:id/cancel", auth, cancelBooking);
+
+module.exports = router;

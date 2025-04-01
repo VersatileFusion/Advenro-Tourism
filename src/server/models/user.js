@@ -6,16 +6,28 @@ const crypto = require('crypto');
 const userSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: [true, 'Email is required'],
+        required: true,
         unique: true,
         trim: true,
-        lowercase: true,
-        match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+        lowercase: true
     },
     password: {
         type: String,
-        required: [true, 'Password is required'],
-        minlength: [8, 'Password must be at least 8 characters long']
+        required: true
+    },
+    name: {
+        type: String,
+        required: true,
+        trim: true
+    },
+    role: {
+        type: String,
+        enum: ['user', 'admin'],
+        default: 'user'
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     },
     firstName: {
         type: String,
@@ -30,11 +42,6 @@ const userSchema = new mongoose.Schema({
         trim: true,
         minlength: [2, 'Last name must be at least 2 characters long'],
         maxlength: [50, 'Last name cannot exceed 50 characters']
-    },
-    role: {
-        type: String,
-        enum: ['user', 'admin', 'hotel_owner'],
-        default: 'user'
     },
     avatar: String,
     phoneNumber: String,
@@ -83,9 +90,13 @@ userSchema.pre('save', async function(next) {
     }
 });
 
-// Compare password method
+// Method to compare password
 userSchema.methods.comparePassword = async function(candidatePassword) {
-    return bcrypt.compare(candidatePassword, this.password);
+    try {
+        return await bcrypt.compare(candidatePassword, this.password);
+    } catch (error) {
+        throw error;
+    }
 };
 
 // Generate JWT token

@@ -1,0 +1,13 @@
+node_modules
+npm-debug.log
+.git
+.gitignore
+.env
+test
+backup
+docs
+cypress
+mock-data
+.mongodb-binaries
+*.rar
+*.zip 

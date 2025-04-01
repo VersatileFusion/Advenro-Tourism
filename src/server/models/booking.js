@@ -1,71 +1,52 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-    user: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: [true, 'Booking must belong to a user']
-    },
-    hotel: {
+    hotelId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Hotel',
-        required: [true, 'Booking must belong to a hotel']
+        required: true
     },
-    room: {
+    userId: {
         type: mongoose.Schema.Types.ObjectId,
-        required: [true, 'Booking must be for a specific room']
+        ref: 'User',
+        required: true
     },
     checkIn: {
         type: Date,
-        required: [true, 'Check-in date is required']
+        required: true
     },
     checkOut: {
         type: Date,
-        required: [true, 'Check-out date is required']
+        required: true
     },
     guests: {
-        adults: {
-            type: Number,
-            required: [true, 'Number of adult guests is required'],
-            min: [1, 'At least one adult guest is required']
-        },
-        children: {
-            type: Number,
-            default: 0,
-            min: 0
-        }
-    },
-    totalPrice: {
         type: Number,
-        required: [true, 'Total price is required'],
-        min: [0, 'Total price cannot be negative']
+        required: true,
+        min: 1
     },
-    payment: {
-        status: {
-            type: String,
-            enum: ['pending', 'completed', 'failed', 'refunded'],
-            default: 'pending'
-        },
-        paymentIntentId: String,
-        paymentMethodId: String,
-        refundId: String
+    specialRequests: {
+        type: String,
+        trim: true
     },
     status: {
         type: String,
         enum: ['pending', 'confirmed', 'cancelled', 'completed'],
         default: 'pending'
     },
-    specialRequests: String,
-    cancellationReason: String,
-    cancellationDate: Date,
-    refundAmount: Number
-}, {
-    timestamps: true
+    totalPrice: {
+        type: Number,
+        required: true,
+        min: 0
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 });
 
-// Validate check-in and check-out dates
+// Validate check-out date is after check-in date
 bookingSchema.pre('save', function(next) {
-    if (this.checkIn >= this.checkOut) {
+    if (this.checkOut <= this.checkIn) {
         next(new Error('Check-out date must be after check-in date'));
     }
     next();
@@ -78,7 +59,7 @@ bookingSchema.virtual('numberOfNights').get(function() {
 
 // Check if booking dates overlap with existing bookings
 bookingSchema.methods.checkAvailability = async function() {
-    const hotel = await mongoose.model('Hotel').findById(this.hotel);
+    const hotel = await mongoose.model('Hotel').findById(this.hotelId);
     if (!hotel) {
         throw new Error('Hotel not found');
     }

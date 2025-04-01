@@ -9,10 +9,23 @@ const { schema: auditLogSchema } = require('./AuditLog');
 const { schema: systemConfigSchema } = require('./SystemConfig');
 const { schema: errorLogSchema } = require('./ErrorLog');
 const { schema: notificationSchema } = require('./Notification');
+const { schema: eventBookingSchema } = require('./EventBooking');
+const { schema: eventSchema } = require('./Event');
+const { schema: restaurantSchema } = require('./Restaurant');
 
 // Helper function to safely compile a model
 const compileModel = (modelName, schema) => {
-    return mongoose.models[modelName] || mongoose.model(modelName, schema);
+    try {
+        // If the model exists, return it instead of recompiling
+        return mongoose.models[modelName] || mongoose.model(modelName, schema);
+    } catch (error) {
+        // If it's an OverwriteModelError, return the existing model
+        if (error.name === 'OverwriteModelError') {
+            return mongoose.model(modelName);
+        }
+        // Otherwise, rethrow the error
+        throw error;
+    }
 };
 
 // Compile all models
@@ -26,6 +39,9 @@ const AuditLog = compileModel('AuditLog', auditLogSchema);
 const SystemConfig = compileModel('SystemConfig', systemConfigSchema);
 const ErrorLog = compileModel('ErrorLog', errorLogSchema);
 const Notification = compileModel('Notification', notificationSchema);
+const EventBooking = compileModel('EventBooking', eventBookingSchema);
+const Event = compileModel('Event', eventSchema);
+const Restaurant = compileModel('Restaurant', restaurantSchema);
 
 // Export all models
 module.exports = {
@@ -38,5 +54,8 @@ module.exports = {
     AuditLog,
     SystemConfig,
     ErrorLog,
-    Notification
+    Notification,
+    EventBooking,
+    Event,
+    Restaurant
 }; 
