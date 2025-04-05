@@ -9,7 +9,10 @@ const {
     searchFlights,
     searchAirports,
     bookFlight,
-    getUserBookings
+    getUserBookings,
+    getFlightSeats,
+    reserveSeat,
+    releaseSeat
 } = require('../controllers/flightController');
 
 const { authenticate, authorize } = require('../middleware/auth');
@@ -240,6 +243,94 @@ router.put('/:id', authenticate, authorize('admin'), flightValidation, updateFli
  *         description: Flight not found
  */
 router.delete('/:id', authenticate, authorize('admin'), deleteFlight);
+
+/**
+ * @swagger
+ * /flights/{id}/seats:
+ *   get:
+ *     summary: Get seat map for a flight
+ *     tags: [Flights]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Flight ID
+ *       - in: query
+ *         name: cabinClass
+ *         schema:
+ *           type: string
+ *           enum: [economy, business, first]
+ *           default: economy
+ *         description: Cabin class
+ *     responses:
+ *       200:
+ *         description: Seat map for the flight
+ *       404:
+ *         description: Flight not found
+ */
+router.get('/:id/seats', getFlightSeats);
+
+/**
+ * @swagger
+ * /flights/{id}/seats/{seatId}/reserve:
+ *   post:
+ *     summary: Reserve a seat on a flight
+ *     tags: [Flights]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Flight ID
+ *       - in: path
+ *         name: seatId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Seat ID (e.g. 12A)
+ *     responses:
+ *       200:
+ *         description: Seat reserved successfully
+ *       400:
+ *         description: Seat is no longer available
+ *       404:
+ *         description: Flight or seat not found
+ */
+router.post('/:id/seats/:seatId/reserve', authenticate, reserveSeat);
+
+/**
+ * @swagger
+ * /flights/{id}/seats/{seatId}/release:
+ *   post:
+ *     summary: Release a reserved seat
+ *     tags: [Flights]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Flight ID
+ *       - in: path
+ *         name: seatId
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Seat ID (e.g. 12A)
+ *     responses:
+ *       200:
+ *         description: Seat released successfully
+ *       404:
+ *         description: Flight or seat not found
+ */
+router.post('/:id/seats/:seatId/release', authenticate, releaseSeat);
 
 // Public routes
 router.get('/airports/search', searchAirports);

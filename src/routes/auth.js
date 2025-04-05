@@ -195,6 +195,87 @@ router.post('/facebook', authController.facebookAuth);
 
 /**
  * @swagger
+ * /auth/apple:
+ *   post:
+ *     summary: Authenticate with Apple
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - identityToken
+ *             properties:
+ *               identityToken:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Authentication successful
+ *       401:
+ *         description: Invalid credentials
+ */
+router.post('/apple', authController.appleAuth);
+
+/**
+ * @swagger
+ * /auth/refresh-token:
+ *   post:
+ *     summary: Refresh authentication token
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Token refreshed successfully
+ *       401:
+ *         description: Invalid or expired token
+ */
+router.post('/refresh-token', authenticate, authController.refreshToken);
+
+/**
+ * @swagger
+ * /auth/sessions:
+ *   get:
+ *     summary: Get all active sessions for current user
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Sessions retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/sessions', authenticate, authController.getSessions);
+
+/**
+ * @swagger
+ * /auth/sessions/{id}:
+ *   delete:
+ *     summary: Terminate a specific session
+ *     tags: [Auth]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Session terminated successfully
+ *       401:
+ *         description: Not authorized
+ *       404:
+ *         description: Session not found
+ */
+router.delete('/sessions/:id', authenticate, authController.terminateSession);
+
+/**
+ * @swagger
  * /auth/profile:
  *   get:
  *     summary: Get current user profile

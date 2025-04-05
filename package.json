@@ -2,17 +2,25 @@
   "name": "tourism-api",
   "version": "1.0.0",
   "description": "Tourism API with hotel bookings and reviews",
-  "main": "src/server/app.js",
+  "main": "app/app.js",
   "scripts": {
-    "start": "node src/server/app.js",
-    "dev": "nodemon src/server/app.js",
+    "start": "node app/app.js",
+    "dev": "nodemon app/app.js",
     "test": "mocha --timeout 10000 test/index.test.js",
-    "test:unit": "mocha --timeout 10000 test/unit/**/*.test.js",
-    "test:integration": "mocha --timeout 10000 test/integration/**/*.test.js",
+    "test:unit": "NODE_ENV=test mocha test/unit/**/*.test.js",
+    "test:integration": "NODE_ENV=test node scripts/run-integration-tests.js",
     "test:simple": "mocha --timeout 10000 test/unit/**/*.simple.test.js",
     "test:basic": "mocha --timeout 10000 test/unit/controllers/basic.controller.test.js",
     "test:integration:sequence": "node scripts/run-integration-tests.js",
-    "generate:test": "node scripts/generate-test.js"
+    "generate:test": "node scripts/generate-test.js",
+    "test:e2e": "mocha test/e2e-test.js --timeout 30000",
+    "test:e2e:win": "cross-env NODE_ENV=test mocha test/e2e-test.js --timeout 30000",
+    "test:basic:win": "cross-env NODE_ENV=test mocha test/basic-test.js",
+    "test:api:win": "cross-env NODE_ENV=test mocha test/core-api-test.js",
+    "test:structure": "cross-env NODE_ENV=test mocha test/api-structure.js",
+    "test:frontend": "cross-env NODE_ENV=test mocha test/frontend-structure.js",
+    "test:all": "cross-env NODE_ENV=test mocha test/basic-test.js test/api-structure.js test/frontend-structure.js",
+    "test:connections": "cross-env NODE_ENV=test mocha test/api-connections.js"
   },
   "keywords": [
     "tourism",
@@ -43,12 +51,15 @@
     "stripe": "^12.0.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0",
     "validator": "^13.15.0",
     "winston": "^3.17.0",
-    "winston-daily-rotate-file": "^5.0.0"
+    "winston-daily-rotate-file": "^5.0.0",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
     "chai": "^4.5.0",
+    "cross-env": "^7.0.3",
     "csv-writer": "^1.6.0",
     "mocha": "^10.2.0",
     "mongodb-memory-server": "^8.12.2",

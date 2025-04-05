@@ -1,0 +1,203 @@
+<!-- Notification Dropdown -->
+<div class="notification-wrapper">
+  <button id="notification-btn" class="btn btn-icon position-relative">
+    <i class="fas fa-bell"></i>
+    <span id="notification-badge" class="badge badge-danger badge-counter d-none">0</span>
+  </button>
+  
+  <div id="notification-dropdown" class="dropdown-menu dropdown-menu-right notification-dropdown">
+    <div class="notification-header">
+      <h6>Notifications</h6>
+      <button id="mark-all-read-btn" class="btn btn-sm btn-link">Mark all as read</button>
+    </div>
+    
+    <div id="notification-loader" class="notification-loader d-none">
+      <div class="spinner-border spinner-border-sm text-primary" role="status">
+        <span class="sr-only">Loading...</span>
+      </div>
+    </div>
+    
+    <div id="notification-list" class="notification-list">
+      <!-- Notifications will be loaded here dynamically -->
+    </div>
+    
+    <div id="notification-pagination" class="notification-pagination">
+      <!-- Pagination will be rendered here dynamically -->
+    </div>
+    
+    <div class="notification-footer">
+      <a href="/notifications" class="btn btn-block btn-sm btn-light">View All Notifications</a>
+    </div>
+  </div>
+</div>
+
+<!-- Notification Styles -->
+<style>
+  .notification-wrapper {
+    position: relative;
+  }
+  
+  .notification-dropdown {
+    width: 350px;
+    padding: 0;
+    max-height: 500px;
+    overflow: hidden;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  }
+  
+  .notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .notification-header h6 {
+    margin: 0;
+    font-weight: 600;
+  }
+  
+  .notification-list {
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  
+  .notification-item {
+    display: flex;
+    padding: 0.75rem 1rem;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .notification-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+  }
+  
+  .notification-item.unread {
+    background-color: rgba(0, 123, 255, 0.05);
+  }
+  
+  .notification-icon {
+    flex: 0 0 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: rgba(0, 123, 255, 0.1);
+    color: #007bff;
+    margin-right: 0.75rem;
+  }
+  
+  .notification-content {
+    flex: 1;
+  }
+  
+  .notification-title {
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+    font-size: 0.875rem;
+    color: #212529;
+  }
+  
+  .notification-message {
+    font-size: 0.8125rem;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
+  }
+  
+  .notification-meta {
+    font-size: 0.75rem;
+    color: #adb5bd;
+  }
+  
+  .notification-actions {
+    display: flex;
+    align-items: center;
+  }
+  
+  .notification-actions button {
+    background: none;
+    border: none;
+    padding: 0.25rem;
+    margin-left: 0.25rem;
+    font-size: 0.75rem;
+    color: #adb5bd;
+    cursor: pointer;
+    transition: color 0.2s;
+  }
+  
+  .notification-actions button:hover {
+    color: #6c757d;
+  }
+  
+  .notification-actions .btn-mark-read:hover {
+    color: #28a745;
+  }
+  
+  .notification-actions .btn-delete:hover {
+    color: #dc3545;
+  }
+  
+  .notification-footer {
+    padding: 0.75rem 1rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+  }
+  
+  .empty-notifications {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #adb5bd;
+  }
+  
+  .empty-notifications i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .notification-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: #dc3545;
+  }
+  
+  .notification-error i {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .notification-loader {
+    display: flex;
+    justify-content: center;
+    padding: 1rem;
+  }
+  
+  .notification-pagination {
+    padding: 0.5rem;
+    display: flex;
+    justify-content: center;
+  }
+  
+  .notification-pagination .pagination {
+    margin-bottom: 0;
+  }
+  
+  .badge-counter {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    transform: scale(0.8);
+    font-size: 0.75rem;
+    padding: 0.2rem 0.4rem;
+    min-width: 1rem;
+    text-align: center;
+  }
+</style> 

@@ -12,6 +12,9 @@ const { schema: notificationSchema } = require('./Notification');
 const { schema: eventBookingSchema } = require('./EventBooking');
 const { schema: eventSchema } = require('./Event');
 const { schema: restaurantSchema } = require('./Restaurant');
+const { schema: destinationSchema } = require('./Destination');
+const { schema: localServiceSchema } = require('./LocalService');
+const { schema: paymentSchema } = require('./Payment');
 
 // Helper function to safely compile a model
 const compileModel = (modelName, schema) => {

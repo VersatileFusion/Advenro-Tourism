@@ -9,6 +9,7 @@ const Flight = require('../models/Flight');
 const Restaurant = require('../models/Restaurant');
 const Event = require('../models/Event');
 const LocalService = require('../models/LocalService');
+const upload = require('../middleware/upload');
 
 /**
  * @swagger
@@ -337,6 +338,577 @@ router.post('/backup/:filename', authenticate, authorize('admin'), adminControll
  *         description: List of backups retrieved successfully
  */
 router.get('/backups', authenticate, authorize('admin'), adminController.getBackupsList);
+
+/**
+ * @swagger
+ * /admin/users/{id}/bookings:
+ *   get:
+ *     summary: Get user bookings
+ *     tags: [Admin]
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User bookings retrieved successfully
+ *       401:
+ *         description: Not authorized
+ *       404:
+ *         description: User not found
+ */
+router.get('/users/:id/bookings', authenticate, authorize('admin'), adminController.getUserBookings);
+
+/**
+ * @swagger
+ * /admin/restaurants:
+ *   get:
+ *     summary: Get all restaurants with filtering options
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: cuisineType
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: priceLevel
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: List of restaurants retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/restaurants', authenticate, authorize('admin'), adminController.getAdminRestaurants);
+
+/**
+ * @swagger
+ * /admin/restaurants/{id}:
+ *   get:
+ *     summary: Get restaurant details
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Restaurant details retrieved successfully
+ *       404:
+ *         description: Restaurant not found
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/restaurants/:id', authenticate, authorize('admin'), adminController.getAdminRestaurantById);
+
+/**
+ * @swagger
+ * /admin/restaurants:
+ *   post:
+ *     summary: Create a new restaurant
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - description
+ *               - cuisineType
+ *               - priceLevel
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               cuisineType:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               priceLevel:
+ *                 type: number
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       201:
+ *         description: Restaurant created successfully
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Not authorized
+ */
+router.post('/restaurants', authenticate, authorize('admin'), upload.fields([
+  { name: 'coverImage', maxCount: 1 },
+  { name: 'images', maxCount: 5 }
+]), adminController.createRestaurant);
+
+/**
+ * @swagger
+ * /admin/restaurants/{id}:
+ *   put:
+ *     summary: Update restaurant details
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               cuisineType:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               priceLevel:
+ *                 type: number
+ *               coverImage:
+ *                 type: string
+ *                 format: binary
+ *               images:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: binary
+ *     responses:
+ *       200:
+ *         description: Restaurant updated successfully
+ *       404:
+ *         description: Restaurant not found
+ *       400:
+ *         description: Invalid input data
+ *       401:
+ *         description: Not authorized
+ */
+router.put('/restaurants/:id', authenticate, authorize('admin'), upload.fields([
+  { name: 'coverImage', maxCount: 1 },
+  { name: 'images', maxCount: 5 }
+]), adminController.updateRestaurant);
+
+/**
+ * @swagger
+ * /admin/restaurants/{id}:
+ *   delete:
+ *     summary: Delete a restaurant (soft delete)
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Restaurant deleted successfully
+ *       404:
+ *         description: Restaurant not found
+ *       401:
+ *         description: Not authorized
+ */
+router.delete('/restaurants/:id', authenticate, authorize('admin'), adminController.deleteRestaurant);
+
+/**
+ * @swagger
+ * /admin/restaurants/{id}/toggle-status:
+ *   patch:
+ *     summary: Toggle restaurant active status
+ *     tags: [Admin, Restaurants]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               active:
+ *                 type: boolean
+ *     responses:
+ *       200:
+ *         description: Restaurant status updated successfully
+ *       404:
+ *         description: Restaurant not found
+ *       401:
+ *         description: Not authorized
+ */
+router.patch('/restaurants/:id/toggle-status', authenticate, authorize('admin'), adminController.toggleRestaurantStatus);
+
+/**
+ * @swagger
+ * /admin/events:
+ *   get:
+ *     summary: Get all events with filtering options
+ *     tags: [Admin, Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: isFeatured
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: startDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: endDate
+ *         schema:
+ *           type: string
+ *           format: date
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Events retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/events', authenticate, authorize('admin'), adminController.getEvents);
+
+/**
+ * @swagger
+ * /admin/events/stats:
+ *   get:
+ *     summary: Get event statistics
+ *     tags: [Admin, Events]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Event statistics retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/events/stats', authenticate, authorize('admin'), adminController.getEventStats);
+
+/**
+ * @swagger
+ * /admin/events/{id}/status:
+ *   put:
+ *     summary: Update event status
+ *     tags: [Admin, Events]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [upcoming, ongoing, completed, canceled]
+ *     responses:
+ *       200:
+ *         description: Event status updated successfully
+ *       404:
+ *         description: Event not found
+ */
+router.put('/events/:id/status', authenticate, authorize('admin'), adminController.updateEventStatus);
+
+/**
+ * @swagger
+ * /admin/services:
+ *   get:
+ *     summary: Get all local services with filtering options
+ *     tags: [Admin, LocalServices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: rating
+ *         schema:
+ *           type: number
+ *       - in: query
+ *         name: priceRange
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: isFeatured
+ *         schema:
+ *           type: boolean
+ *       - in: query
+ *         name: city
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Local services retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/services', authenticate, authorize('admin'), adminController.getLocalServices);
+
+/**
+ * @swagger
+ * /admin/services/stats:
+ *   get:
+ *     summary: Get local service statistics
+ *     tags: [Admin, LocalServices]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Local service statistics retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/services/stats', authenticate, authorize('admin'), adminController.getServiceStats);
+
+/**
+ * @swagger
+ * /admin/services/{id}/verify:
+ *   put:
+ *     summary: Verify or unverify a local service
+ *     tags: [Admin, LocalServices]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - isVerified
+ *             properties:
+ *               isVerified:
+ *                 type: boolean
+ *               verificationNotes:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Local service verification status updated successfully
+ *       404:
+ *         description: Local service not found
+ */
+router.put('/services/:id/verify', authenticate, authorize('admin'), adminController.verifyLocalService);
+
+/**
+ * @swagger
+ * /admin/bookings/stats:
+ *   get:
+ *     summary: Get booking statistics and analytics
+ *     tags: [Admin, Bookings]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [week, month, year, all]
+ *     responses:
+ *       200:
+ *         description: Booking statistics retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/bookings/stats', authenticate, authorize('admin'), adminController.getBookingStats);
+
+/**
+ * @swagger
+ * /admin/users/profiles:
+ *   get:
+ *     summary: Get all user profiles with filtering options
+ *     tags: [Admin, Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profiles retrieved successfully
+ *       401:
+ *         description: Not authorized
+ */
+router.get('/users/profiles', authenticate, authorize('admin'), adminController.getUserProfiles);
+
+/**
+ * @swagger
+ * /admin/users/{id}/profile:
+ *   get:
+ *     summary: Get detailed user profile with activities
+ *     tags: [Admin, Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: User profile details retrieved successfully
+ *       401:
+ *         description: Not authorized
+ *       404:
+ *         description: User not found
+ */
+router.get('/users/:id/profile', authenticate, authorize('admin'), adminController.getUserProfileDetails);
+
+/**
+ * @swagger
+ * /admin/users/{id}/status:
+ *   put:
+ *     summary: Update user status
+ *     tags: [Admin, Users]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [active, inactive, suspended, pending]
+ *               statusNote:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: User status updated successfully
+ *       404:
+ *         description: User not found
+ */
+router.put('/users/:id/status', authenticate, authorize('admin'), adminController.updateUserStatus);
 
 // Add this new route for admin stats
 router.get('/stats', auth, async (req, res) => {

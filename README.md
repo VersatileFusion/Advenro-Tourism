@@ -1,398 +1,243 @@
-# Advenro Travel Platform | پلتفرم سفر آدونرو
+# Advenro Travel Platform
 
-<div align="center">
-  <h3><a href="#advenro-travel-platform--پلتفرم-سفر-آدونرو">English</a> | فارسی</h3>
-</div>
+A comprehensive travel booking platform with features for hotels, flights, tours, restaurants, and user management.
+
+## Features
+
+- **User Authentication**: Login, registration, and profile management
+- **Booking System**: Book hotels, flights, tours, and restaurants
+- **Search Functionality**: Unified search across all travel services
+- **Admin Dashboard**: Complete administrative interface
+- **Responsive Design**: Optimized for desktop and mobile devices
+- **Real-time Notifications**: WebSocket-based notifications
+
+## Installation
+
+1. Clone the repository:
+```bash
+git clone https://github.com/yourusername/advenro.git
+cd advenro
+```
+
+2. Install dependencies:
+```bash
+npm install
+```
+
+3. Configure environment variables:
+Create a `.env` file in the root directory based on the `.env.example` file.
+
+4. Start the application:
+```bash
+npm run dev
+```
+
+## Usage
+
+- Access the main application at http://localhost:3000
+- Access the admin dashboard at http://localhost:3000/admin
+
+## API Testing
+
+You can test the API endpoints using the included Postman collection:
+```bash
+# Import the following files into Postman
+postman_collection.json
+postman_environments.json
+```
+
+## Mock Server
+
+For development without external dependencies, use the mock server:
+```bash
+node mock-server.js
+```
+
+## Deployment
+
+For detailed deployment instructions, refer to:
+- `DEPLOYMENT-GUIDE.md` - General deployment guide
+- `DOCKER-DEPLOYMENT.md` - Docker-specific deployment instructions
+
+## Technologies
+
+- **Frontend**: HTML, CSS, JavaScript
+- **Backend**: Node.js, Express.js
+- **Database**: MongoDB
+- **Real-time**: WebSockets
+- **Authentication**: JWT
+- **API Documentation**: Swagger
+- **Payment Processing**: Stripe
+
+## Project Structure
+
+- `/app`: Backend code
+  - `/controllers`: API controllers
+  - `/middleware`: Express middleware
+  - `/models`: Database models
+  - `/routes`: API routes
+  - `/services`: Business logic
+  - `/config`: Configuration files
+  - `/websocket`: WebSocket functionality
+- `/public`: Frontend code
+  - `/css`: Stylesheets
+  - `/js`: JavaScript files
+  - `/images`: Images and assets
+- `/docs`: Documentation
+- `/test`: Test files
+- `/mock-data`: Mock data for development
+
+## Contributing
+
+Please read `CONTRIBUTING.md` for details on our code of conduct and the process for submitting pull requests.
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run unit tests
+npm run test:unit
+
+# Run integration tests
+npm run test:integration
+
+# Run E2E tests
+npm run test:e2e
+```
+
+For more detailed testing information, see `README-TESTING.md`.
+
+## Troubleshooting
+
+For common issues and their solutions, see `TROUBLESHOOTING.md`.
+
+## License
+
+This project is licensed under the ISC License - see the LICENSE file for details.
 
 ---
 
-## 🌍 معرفی
+<div dir="rtl">
 
-آدونرو یک پلتفرم جامع رزرو سفر است که مسافران را با هتل‌ها، تورها، پروازها، رستوران‌ها و خدمات محلی متصل می‌کند. پلتفرم ما تجربه‌ای بی‌نقص برای مسافران فراهم می‌کند تا سفر مطلوب خود را کشف، برنامه‌ریزی و رزرو کنند.
+# پلتفرم سفر ادونرو
 
-### ساخته شده با
+یک پلتفرم جامع رزرو سفر با امکاناتی برای هتل‌ها، پروازها، تورها، رستوران‌ها و مدیریت کاربران.
+
+## ویژگی‌ها
+
+- **احراز هویت کاربر**: ورود، ثبت‌نام و مدیریت پروفایل
+- **سیستم رزرو**: رزرو هتل‌ها، پروازها، تورها و رستوران‌ها
+- **قابلیت جستجو**: جستجوی یکپارچه در تمام خدمات سفر
+- **داشبورد مدیریت**: رابط کامل مدیریتی
+- **طراحی واکنش‌گرا**: بهینه‌سازی شده برای دسکتاپ و دستگاه‌های موبایل
+- **اعلان‌های بلادرنگ**: اعلان‌های مبتنی بر WebSocket
+
+## نصب
+
+1. مخزن را کلون کنید:
+```bash
+git clone https://github.com/yourusername/advenro.git
+cd advenro
+```
+
+2. وابستگی‌ها را نصب کنید:
+```bash
+npm install
+```
+
+3. متغیرهای محیطی را پیکربندی کنید:
+یک فایل `.env` در دایرکتوری اصلی بر اساس فایل `.env.example` ایجاد کنید.
+
+4. برنامه را شروع کنید:
+```bash
+npm run dev
+```
+
+## استفاده
+
+- به برنامه اصلی در http://localhost:3000 دسترسی پیدا کنید
+- به داشبورد مدیریت در http://localhost:3000/admin دسترسی پیدا کنید
+
+## تست API
+
+شما می‌توانید نقاط پایانی API را با استفاده از مجموعه Postman موجود تست کنید:
+```bash
+# فایل‌های زیر را به Postman وارد کنید
+postman_collection.json
+postman_environments.json
+```
+
+## سرور شبیه‌سازی شده
+
+برای توسعه بدون وابستگی‌های خارجی، از سرور شبیه‌سازی شده استفاده کنید:
+```bash
+node mock-server.js
+```
+
+## استقرار
+
+برای دستورالعمل‌های دقیق استقرار، به موارد زیر مراجعه کنید:
+- `DEPLOYMENT-GUIDE.md` - راهنمای کلی استقرار
+- `DOCKER-DEPLOYMENT.md` - دستورالعمل‌های استقرار مختص Docker
+
+## فناوری‌ها
+
 - **فرانت‌اند**: HTML، CSS، JavaScript
-- **بک‌اند**: Node.js، Express
-- **پایگاه داده**: MongoDB با Mongoose ODM
-- **احراز هویت**: سیستم مبتنی بر JWT
-- **پرداخت**: یکپارچه‌سازی با Stripe
-- **ذخیره‌سازی ابری**: AWS S3 برای تصاویر و فایل‌ها
-- **کش**: Redis برای بهینه‌سازی عملکرد
-
----
-
-## 🏗️ معماری
-
-برنامه از معماری کلاینت-سرور پیروی می‌کند:
-
-```
-┌──────────────┐        ┌──────────────┐        ┌──────────────┐
-│              │        │              │        │              │
-│   فرانت‌اند   │◄─────► │    REST API  │◄─────► │  پایگاه داده  │
-│   (مرورگر)   │        │  (Express)   │        │  (MongoDB)   │
-│              │        │              │        │              │
-└──────────────┘        └──────────────┘        └──────────────┘
-```
-
-### معماری API
-
-API ما از معماری RESTful با اندپوینت‌ها و پاسخ‌های استاندارد پیروی می‌کند. تمام پاسخ‌ها از یک فرمت یکسان پیروی می‌کنند:
-
-#### فرمت پاسخ موفقیت‌آمیز
-```json
-{
-  "success": true,
-  "message": "عملیات موفقیت‌آمیز بود",
-  "status": 200,
-  "data": { /* داده‌های پاسخ */ }
-}
-```
-
-#### فرمت پاسخ خطا
-```json
-{
-  "success": false,
-  "error": "پیام خطا",
-  "status": 400,
-  "data": null
-}
-```
-
----
-
-## 🔌 یکپارچه‌سازی فرانت‌اند-بک‌اند
-
-### سرویس مرکزی API
-
-فرانت‌اند از یک کلاس `ApiService` مرکزی برای مدیریت تمام درخواست‌های API استفاده می‌کند:
-
-```javascript
-// مثال استفاده
-const data = await apiService.get(API_CONFIG.ENDPOINTS.USERS.PROFILE);
-```
-
-سرویس API موارد زیر را مدیریت می‌کند:
-- مدیریت توکن احراز هویت
-- مدیریت خطا با فرمت‌های یکسان
-- تجزیه و اعتبارسنجی پاسخ
-- نظارت بر وضعیت شبکه
-- مکانیزم‌های تلاش مجدد برای درخواست‌های ناموفق
-
-### پیکربندی API
-
-اندپوینت‌های API در یک پیکربندی متمرکز تعریف شده‌اند:
-
-```javascript
-const API_CONFIG = {
-  BASE_URL: '/api',
-  ENDPOINTS: {
-    AUTH: {
-      LOGIN: '/auth/login',
-      // ...سایر اندپوینت‌های احراز هویت
-    },
-    USERS: {
-      // اندپوینت‌های مربوط به کاربر
-    },
-    // ...سایر دسته‌های اندپوینت
-  }
-}
-```
-
----
-
-## 🔐 سیستم احراز هویت
-
-برنامه از احراز هویت مبتنی بر JWT استفاده می‌کند:
-
-1. کاربر با اعتبارنامه‌های خود وارد می‌شود
-2. سرور اعتبارسنجی کرده و یک توکن JWT برمی‌گرداند
-3. فرانت‌اند توکن را در localStorage ذخیره می‌کند
-4. درخواست‌های API شامل توکن در هدر Authorization هستند
-5. سرور توکن را برای مسیرهای محافظت‌شده اعتبارسنجی می‌کند
-
-### جریان احراز هویت
-
-```
-┌──────────┐                                              ┌──────────┐
-│          │                                              │          │
-│  کلاینت  │                                              │   سرور   │
-│          │                                              │          │
-└────┬─────┘                                              └────┬─────┘
-     │                                                         │
-     │  POST /api/auth/login (نام کاربری، رمز عبور)            │
-     │────────────────────────────────────────────────────────►│
-     │                                                         │
-     │  { token: "jwt-token", user: {...} }                    │
-     │◄────────────────────────────────────────────────────────│
-     │                                                         │
-     │  GET /api/protected-route                               │
-     │  Authorization: Bearer jwt-token                        │
-     │────────────────────────────────────────────────────────►│
-     │                                                         │
-     │  منبع محافظت‌شده                                        │
-     │◄────────────────────────────────────────────────────────│
-     │                                                         │
-```
-
----
-
-## 🚀 ویژگی‌های کلیدی
-
-### 1. مدیریت یکپارچه رزرو
-
-سیستم استاندارد رزرو برای انواع مختلف خدمات:
-- رزرو هتل با انتخاب اتاق
-- رزرو تور با گزینه‌های راهنما
-- رزرو پرواز با انتخاب صندلی
-- رزرو رویداد با مدیریت بلیط
-- رزرو خدمات محلی
-
-### 2. پردازش پرداخت
-
-سیستم پرداخت یکپارچه با استفاده از Stripe:
-- پردازش پرداخت امن
-- پشتیبانی از روش‌های پرداخت متعدد
-- ایجاد قصد پرداخت
-- مدیریت وب‌هوک برای رویدادهای پرداخت
-- پردازش بازپرداخت
-
-### 3. علاقه‌مندی‌های کاربر و شخصی‌سازی
-
-سیستمی برای کاربران جهت ذخیره و مدیریت موارد مورد علاقه:
-- افزودن/حذف علاقه‌مندی‌ها در انواع مختلف آیتم‌ها
-- مشاهده علاقه‌مندی‌های سازمان‌یافته بر اساس دسته‌بندی
-- پیشنهادات شخصی‌سازی شده
-- پیگیری موارد اخیراً مشاهده شده
-
-### 4. سیستم جستجوی پیشرفته
-
-قابلیت جستجوی قدرتمند:
-- جستجوی مقصد با تکمیل خودکار
-- فیلترها برای قیمت، امتیازات، امکانات
-- گزینه‌های نزدیک بر اساس موقعیت جغرافیایی
-- پیشنهادات موارد مرتبط
-- نمایش مقاصد محبوب
-
-### 5. سیستم نظردهی و امتیازدهی
-
-سیستم جامع نظردهی:
-- نظرات ایجاد شده توسط کاربر با امتیازات
-- نظرات رزرو تأیید شده
-- آپلود عکس برای نظرات
-- رأی‌گیری مفید بودن نظرات
-- پاسخ‌های مالک
-
-### 6. پشتیبانی چند زبانه
-
-پشتیبانی از چندین زبان:
-- رابط‌های انگلیسی و فارسی
-- ترجمه پویای محتوا
-- پشتیبانی از چیدمان راست به چپ (RTL)
-- ذخیره ترجیحات زبانی
-
----
-
-## 📡 اندپوینت‌های API
-
-### احراز هویت
-
-- `POST /api/auth/login` - ورود کاربر
-- `POST /api/auth/register` - ثبت‌نام کاربر جدید
-- `POST /api/auth/refresh-token` - تازه‌سازی توکن احراز هویت
-- `GET /api/auth/me` - دریافت اطلاعات کاربر فعلی
-- `POST /api/auth/forgot-password` - بازیابی رمز عبور
-- `POST /api/auth/reset-password` - بازنشانی رمز عبور با توکن
-
-### مدیریت کاربر
-
-- `GET /api/users/profile` - دریافت پروفایل کاربر
-- `PUT /api/users/profile` - به‌روزرسانی پروفایل کاربر
-- `POST /api/users/newsletter` - اشتراک خبرنامه
-- `GET /api/users/notifications` - دریافت اعلان‌های کاربر
-
-### علاقه‌مندی‌ها
-
-- `GET /api/users/favorites` - دریافت علاقه‌مندی‌های کاربر
-- `POST /api/users/favorites/:itemType/:itemId` - افزودن آیتم به علاقه‌مندی‌ها
-- `DELETE /api/users/favorites/:itemType/:itemId` - حذف از علاقه‌مندی‌ها
-
-### رزروها
-
-- `GET /api/users/bookings` - دریافت همه رزروهای کاربر
-- `GET /api/users/bookings/:id` - دریافت جزئیات رزرو
-- `PUT /api/users/bookings/:id/cancel` - لغو رزرو
-- `GET /api/bookings/:id/confirmation` - دریافت تأییدیه رزرو
-
-### پرداخت‌ها
-
-- `POST /api/payments/create-payment-intent` - ایجاد قصد پرداخت
-- `POST /api/payments/webhook` - مدیریت وب‌هوک Stripe
-- `POST /api/payments/verify` - تأیید پرداخت
-- `POST /api/payments/refund` - پردازش بازپرداخت
-
-### جستجو و اکتشاف
-
-- `GET /api/destinations/search` - جستجوی مقاصد
-- `GET /api/destinations/popular` - دریافت مقاصد محبوب
-- `GET /api/destinations/:id` - دریافت جزئیات مقصد
-- `GET /api/tours/search` - جستجوی تورها
-- `GET /api/hotels/search` - جستجوی هتل‌ها
-
-### نظرات
-
-- `GET /api/reviews/:itemType/:itemId` - دریافت نظرات آیتم
-- `POST /api/reviews/:itemType/:itemId` - ایجاد نظر
-- `PUT /api/reviews/:id` - به‌روزرسانی نظر
-- `POST /api/reviews/:id/helpful` - نشانه‌گذاری نظر به عنوان مفید
-
----
-
-## 🛠️ ساختار پروژه
-
-```
-advenro/
-├── public/              # فایل‌های استاتیک و فرانت‌اند
-│   ├── css/            # استایل‌شیت‌ها
-│   ├── js/             # فایل‌های جاوااسکریپت
-│   │   ├── components/ # کامپوننت‌های UI
-│   │   ├── services/   # سرویس‌های فرانت‌اند
-│   │   └── utils/      # توابع کمکی
-│   ├── images/         # تصاویر و آیکون‌ها
-│   └── *.html          # صفحات HTML
-│
-├── src/                 # کد منبع بک‌اند
-│   ├── config/         # فایل‌های پیکربندی
-│   ├── controllers/    # کنترلرهای API
-│   ├── middleware/     # میان‌افزارهای Express
-│   ├── models/         # مدل‌های Mongoose
-│   ├── routes/         # مسیرهای API
-│   ├── services/       # سرویس‌های منطق کسب و کار
-│   ├── utils/          # توابع کمکی
-│   └── server.js       # نقطه ورود سرور
-│
-├── tests/               # فایل‌های تست
-│   ├── unit/           # تست‌های واحد
-│   └── integration/    # تست‌های یکپارچگی
-│
-├── docs/                # مستندات
-│   └── api/            # مستندات API
-│
-├── .env.example         # متغیرهای محیطی نمونه
-├── package.json         # وابستگی‌ها و اسکریپت‌ها
-└── README.md            # این فایل
-```
-
----
-
-## 💡 شروع به کار
-
-### پیش‌نیازها
-
-- Node.js (نسخه 14+)
-- MongoDB
-- حساب Stripe برای پرداخت‌ها
-- حساب AWS برای ذخیره‌سازی S3 (اختیاری)
-- Redis (برای کش، اختیاری)
-
-### نصب
-
-1. کلون کردن مخزن
-   ```bash
-   git clone https://github.com/yourusername/advenro.git
-   cd advenro
-   ```
-
-2. نصب وابستگی‌ها
-   ```bash
-   npm install
-   ```
-
-3. تنظیم متغیرهای محیطی در فایل `.env`
-   ```
-   PORT=3000
-   MONGO_URI=your_mongodb_connection_string
-   JWT_SECRET=your_jwt_secret
-   STRIPE_SECRET_KEY=your_stripe_secret_key
-   STRIPE_WEBHOOK_SECRET=your_stripe_webhook_secret
-   AWS_ACCESS_KEY=your_aws_access_key
-   AWS_SECRET_KEY=your_aws_secret_key
-   AWS_BUCKET_NAME=your_s3_bucket_name
-   ```
-
-4. راه‌اندازی سرور توسعه
-   ```bash
-   npm run dev
-   ```
-
-5. باز کردن مرورگر در آدرس http://localhost:3000
-
----
-
-## 🚀 استقرار
-
-### استقرار تولید
-
-1. ساخت فایل‌های تولید
-   ```bash
-   npm run build
-   ```
-
-2. شروع سرور تولید
-   ```bash
-   npm start
-   ```
-
-### استفاده از داکر
-
-1. ساخت ایمیج داکر
-   ```bash
-   docker build -t advenro .
-   ```
-
-2. اجرای کانتینر
-   ```bash
-   docker run -p 3000:3000 advenro
-   ```
-
----
-
-## 🧪 تست
+- **بک‌اند**: Node.js، Express.js
+- **پایگاه داده**: MongoDB
+- **بلادرنگ**: WebSockets
+- **احراز هویت**: JWT
+- **مستندات API**: Swagger
+- **پردازش پرداخت**: Stripe
+
+## ساختار پروژه
+
+- `/app`: کد بک‌اند
+  - `/controllers`: کنترلرهای API
+  - `/middleware`: میدلویرهای Express
+  - `/models`: مدل‌های پایگاه داده
+  - `/routes`: مسیرهای API
+  - `/services`: منطق کسب و کار
+  - `/config`: فایل‌های پیکربندی
+  - `/websocket`: قابلیت WebSocket
+- `/public`: کد فرانت‌اند
+  - `/css`: استایل‌شیت‌ها
+  - `/js`: فایل‌های JavaScript
+  - `/images`: تصاویر و دارایی‌ها
+- `/docs`: مستندات
+- `/test`: فایل‌های تست
+- `/mock-data`: داده‌های شبیه‌سازی شده برای توسعه
+
+## مشارکت
+
+لطفاً `CONTRIBUTING.md` را برای جزئیات مربوط به آیین‌نامه رفتاری ما و فرآیند ارسال درخواست‌های pull مطالعه کنید.
+
+## تست
 
 ```bash
 # اجرای همه تست‌ها
 npm test
 
-# اجرای مجموعه تست‌های خاص
+# اجرای تست‌های واحد
 npm run test:unit
+
+# اجرای تست‌های یکپارچگی
 npm run test:integration
 
-# تولید گزارش پوشش
-npm run test:coverage
+# اجرای تست‌های E2E
+npm run test:e2e
 ```
 
----
+برای اطلاعات دقیق‌تر تست، به `README-TESTING.md` مراجعه کنید.
 
-## 🔒 ویژگی‌های امنیتی
+## عیب‌یابی
 
-- احراز هویت JWT با انقضا
-- هش‌سازی رمز عبور با bcrypt
-- محدودیت نرخ برای اندپوینت‌های API
-- محافظت CSRF
-- جلوگیری از XSS
-- اعتبارسنجی و پاکسازی ورودی
-- هدرهای HTTP امن
-- جلوگیری از تزریق MongoDB
+برای مشکلات رایج و راه‌حل‌های آن‌ها، به `TROUBLESHOOTING.md` مراجعه کنید.
 
----
+## مجوز
 
-## 📝 مجوز
+این پروژه تحت مجوز ISC است - برای جزئیات به فایل LICENSE مراجعه کنید.
 
-این پروژه تحت مجوز ISC ارائه شده است - برای جزئیات به فایل [LICENSE](LICENSE) مراجعه کنید.
-
----
-
-## 👤 تماس
-
-برای سوالات یا پشتیبانی:
-- **توسعه‌دهنده**: عرفان احمدوند
-- **ایمیل**: erwork11@gmail.com 
+</div> 

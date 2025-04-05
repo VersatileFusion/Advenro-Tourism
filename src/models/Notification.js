@@ -1,81 +1,65 @@
-const mongoose = require('mongoose');
+/**
+ * @file Notification Model
+ * @description Defines the schema for system notifications
+ */
 
-const notificationSchema = new mongoose.Schema({
+const mongoose = require("mongoose");
+const Schema = mongoose.Schema;
+
+const NotificationSchema = new Schema(
+  {
+    user: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     title: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
+      trim: true,
     },
     message: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
     type: {
-        type: String,
-        required: true,
-        enum: ['SYSTEM', 'BOOKING', 'PAYMENT', 'ACCOUNT', 'MAINTENANCE', 'TOUR', 'HOTEL', 'FLIGHT']
+      type: String,
+      enum: [
+        "info",
+        "warning",
+        "success",
+        "error",
+        "promo",
+        "booking",
+        "payment",
+        "account",
+        "alert",
+      ],
+      default: "info",
     },
-    priority: {
-        type: String,
-        enum: ['LOW', 'MEDIUM', 'HIGH'],
-        default: 'MEDIUM'
+    read: {
+      type: Boolean,
+      default: false,
     },
-    status: {
-        type: String,
-        enum: ['PENDING', 'SENT', 'FAILED'],
-        default: 'PENDING'
+    link: {
+      type: String,
+      trim: true,
     },
-    targetUsers: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User'
-    }],
-    readBy: [{
-        user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User'
-        },
-        readAt: {
-            type: Date,
-            default: Date.now
-        }
-    }],
-    sentBy: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+    data: {
+      type: Schema.Types.Mixed,
     },
-    scheduledFor: Date,
-    expiresAt: Date,
-    metadata: {
-        type: Map,
-        of: mongoose.Schema.Types.Mixed
+    expiresAt: {
+      type: Date,
     },
-    createdAt: {
-        type: Date,
-        default: Date.now
-    }
-});
+  },
+  { timestamps: true }
+);
 
-// Add indexes for better query performance
-notificationSchema.index({ type: 1, status: 1 });
-notificationSchema.index({ targetUsers: 1 });
-notificationSchema.index({ createdAt: -1 });
-notificationSchema.index({ scheduledFor: 1 }, { sparse: true });
+// Index for efficient queries
+NotificationSchema.index({ user: 1, read: 1, createdAt: -1 });
+NotificationSchema.index({ user: 1, type: 1 });
+NotificationSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
-// Add method to mark notification as read
-notificationSchema.methods.markAsRead = async function(userId) {
-    if (!this.readBy.some(read => read.user.toString() === userId.toString())) {
-        this.readBy.push({ user: userId });
-        await this.save();
-    }
-    return this;
-};
+const Notification = mongoose.model("Notification", NotificationSchema);
 
-// Add static method to get unread notifications for a user
-notificationSchema.statics.getUnreadForUser = function(userId) {
-    return this.find({
-        targetUsers: userId,
-        'readBy.user': { $ne: userId }
-    }).sort('-createdAt');
-};
-
-module.exports = { schema: notificationSchema }; 
+module.exports = Notification;

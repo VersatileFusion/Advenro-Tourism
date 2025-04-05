@@ -215,4 +215,175 @@ exports.searchFlights = async (req, res) => {
             message: 'Server error'
         });
     }
+};
+
+// @desc    Get seats for a specific flight
+// @route   GET /api/v1/flights/:id/seats
+// @access  Public
+exports.getFlightSeats = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { cabinClass = 'economy' } = req.query;
+        
+        const flight = await Flight.findById(id);
+        if (!flight) {
+            return res.status(404).json({
+                success: false,
+                message: 'Flight not found'
+            });
+        }
+        
+        // In a real implementation, you would fetch actual seat data from a database
+        // For demonstration, we'll generate mock seat data
+        const rows = cabinClass === 'economy' ? 30 : (cabinClass === 'business' ? 10 : 5);
+        const seatsPerRow = cabinClass === 'economy' ? 6 : (cabinClass === 'business' ? 4 : 2); // A-F economy, A-D business, A-B first
+        const seats = [];
+        
+        // Generate seat map
+        for (let row = 1; row <= rows; row++) {
+            for (let seatNum = 0; seatNum < seatsPerRow; seatNum++) {
+                const seatLetter = String.fromCharCode(65 + seatNum); // A, B, C, etc.
+                const seatId = `${row}${seatLetter}`;
+                
+                // Randomly mark some seats as unavailable or reserved
+                const randomStatus = Math.random();
+                let status = 'available';
+                
+                if (randomStatus < 0.3) {
+                    status = 'reserved';
+                } else if (randomStatus < 0.4) {
+                    status = 'unavailable';
+                }
+                
+                // Calculate seat price based on cabin class and position
+                let price = 0;
+                switch (cabinClass) {
+                    case 'economy':
+                        price = 50 + (row < 10 ? 20 : 0) + (seatLetter === 'A' || seatLetter === 'F' ? 10 : 0);
+                        break;
+                    case 'business':
+                        price = 150 + (row < 5 ? 50 : 0);
+                        break;
+                    case 'first':
+                        price = 300 + (row < 3 ? 100 : 0);
+                        break;
+                }
+                
+                seats.push({
+                    id: seatId,
+                    row: row,
+                    column: seatLetter,
+                    type: cabinClass,
+                    status: status,
+                    price: price,
+                    features: []
+                });
+            }
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                flightId: id,
+                cabinClass,
+                seats
+            }
+        });
+    } catch (error) {
+        console.error('Get flight seats error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// @desc    Reserve a seat on a flight
+// @route   POST /api/v1/flights/:id/seats/:seatId/reserve
+// @access  Private
+exports.reserveSeat = async (req, res) => {
+    try {
+        const { id, seatId } = req.params;
+        const userId = req.user ? req.user.id : 'guest-user'; // In a real app, this would come from auth middleware
+        
+        const flight = await Flight.findById(id);
+        if (!flight) {
+            return res.status(404).json({
+                success: false,
+                message: 'Flight not found'
+            });
+        }
+        
+        // In a real implementation, you would:
+        // 1. Check if the seat exists and is available
+        // 2. Update the seat status in the database
+        // 3. Create a seat reservation record
+        
+        // For demonstration, we'll just return success
+        
+        // Randomly fail 10% of the time to demonstrate error handling
+        if (Math.random() < 0.1) {
+            return res.status(400).json({
+                success: false,
+                message: 'Seat is no longer available'
+            });
+        }
+        
+        res.json({
+            success: true,
+            data: {
+                flightId: id,
+                seatId,
+                status: 'reserved',
+                userId,
+                timestamp: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('Reserve seat error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// @desc    Release a reserved seat
+// @route   POST /api/v1/flights/:id/seats/:seatId/release
+// @access  Private
+exports.releaseSeat = async (req, res) => {
+    try {
+        const { id, seatId } = req.params;
+        const userId = req.user ? req.user.id : 'guest-user'; // In a real app, this would come from auth middleware
+        
+        const flight = await Flight.findById(id);
+        if (!flight) {
+            return res.status(404).json({
+                success: false,
+                message: 'Flight not found'
+            });
+        }
+        
+        // In a real implementation, you would:
+        // 1. Check if the seat exists and is reserved by this user
+        // 2. Update the seat status in the database
+        
+        // For demonstration, we'll just return success
+        
+        res.json({
+            success: true,
+            data: {
+                flightId: id,
+                seatId,
+                status: 'available',
+                timestamp: new Date().toISOString()
+            }
+        });
+    } catch (error) {
+        console.error('Release seat error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
 }; 

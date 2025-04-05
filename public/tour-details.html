@@ -8,15 +8,18 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Swiper CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.css" />
     <!-- Custom CSS -->
-    <link href="../css/screens.css" rel="stylesheet">
+    <link href="css/screens.css" rel="stylesheet">
+    <link href="css/tour-details.css" rel="stylesheet">
 </head>
 <body>
     <!-- Header -->
     <div class="header-section py-3">
         <div class="container">
             <div class="d-flex align-items-center">
-                <a href="search-results.html" class="me-3">
+                <a href="javascript:history.back()" class="me-3">
                     <i class="fas fa-arrow-left"></i>
                 </a>
                 <h4 class="mb-0">Tour Details</h4>
@@ -24,112 +27,306 @@
         </div>
     </div>
 
-    <!-- Image Gallery -->
-    <div class="tour-gallery">
-        <div class="position-relative">
-            <img src="../images/travel.jpg" alt="Tour Image" class="w-100">
-            <button class="btn-like">
-                <i class="far fa-heart"></i>
-            </button>
+    <!-- Loading Indicator -->
+    <div id="loadingIndicator" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
         </div>
-        <div class="gallery-thumbs py-2">
+        <p class="mt-2">Loading tour details...</p>
+    </div>
+
+    <!-- Error Message -->
+    <div id="errorMessage" class="alert alert-danger mx-3 mt-3" style="display: none;">
+        Unable to load tour details. Please try again later.
+    </div>
+
+    <!-- Tour Content Container -->
+    <div id="tourContentContainer" style="display: none;">
+        <!-- Image Gallery -->
+        <div class="tour-gallery">
+            <div class="position-relative">
+                <div class="swiper" id="tourImagesSwiper">
+                    <div class="swiper-wrapper" id="tourMainImages">
+                        <!-- Main images will be inserted here -->
+                        <div class="swiper-slide">
+                            <img src="images/placeholder.jpg" alt="Tour Image" class="w-100">
+                        </div>
+                    </div>
+                    <!-- Add pagination -->
+                    <div class="swiper-pagination"></div>
+                </div>
+                <button id="favoriteBtn" class="btn-like">
+                    <i class="far fa-heart"></i>
+                </button>
+                <div class="image-counter">
+                    <span id="currentImage">1</span>/<span id="totalImages">1</span>
+                </div>
+                <div class="share-button">
+                    <button id="shareBtn" class="btn btn-light btn-sm rounded-circle shadow-sm">
+                        <i class="fas fa-share-alt"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tour Info -->
+        <div class="tour-info py-4">
             <div class="container">
-                <div class="row g-2">
-                    <div class="col-3">
-                        <img src="../images/travel.jpg" alt="Thumbnail 1" class="img-thumbnail">
+                <div class="tour-badges mb-2">
+                    <span id="tourType" class="badge bg-primary me-2">Tour Type</span>
+                    <span id="tourDifficulty" class="badge bg-info">Difficulty</span>
+                </div>
+                
+                <h4 id="tourName" class="mb-3">Tour Title</h4>
+                
+                <div class="rating mb-3">
+                    <div class="stars">
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-warning"></i>
+                        <i class="fas fa-star text-muted"></i>
                     </div>
-                    <div class="col-3">
-                        <img src="../images/travel.jpg" alt="Thumbnail 2" class="img-thumbnail">
+                    <span id="tourRating">0.0</span>
+                    <small id="reviewCount" class="text-muted">(0 reviews)</small>
+                </div>
+                
+                <div class="location-time mb-3">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="tourLocation">Location</span>
+                    <span class="mx-2">•</span>
+                    <i class="far fa-clock"></i>
+                    <span id="tourDuration">Duration</span>
+                    <span class="mx-2">•</span>
+                    <i class="fas fa-users"></i>
+                    <span id="tourGroupSize">Group Size</span>
+                </div>
+                
+                <div class="price mb-4">
+                    <span id="tourPrice" class="amount">$0.00</span>
+                    <span class="per-person">per person</span>
+                    <span id="discountBadge" class="badge bg-danger ms-2" style="display: none;">10% OFF</span>
+                </div>
+
+                <!-- Quick Navigation -->
+                <div class="quick-nav mb-4 pb-2 border-bottom">
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <a href="#overview" class="quick-nav-item active">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Overview</span>
+                            </a>
+                        </div>
+                        <div class="col-3">
+                            <a href="#itinerary" class="quick-nav-item">
+                                <i class="fas fa-map-marked-alt"></i>
+                                <span>Itinerary</span>
+                            </a>
+                        </div>
+                        <div class="col-3">
+                            <a href="#reviews" class="quick-nav-item">
+                                <i class="fas fa-star"></i>
+                                <span>Reviews</span>
+                            </a>
+                        </div>
+                        <div class="col-3">
+                            <a href="#map" class="quick-nav-item">
+                                <i class="fas fa-map"></i>
+                                <span>Map</span>
+                            </a>
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <img src="../images/travel.jpg" alt="Thumbnail 3" class="img-thumbnail">
+                </div>
+
+                <!-- Tour Description -->
+                <div id="overview" class="tour-description mb-4 section">
+                    <h5 class="section-title mb-3">About This Tour</h5>
+                    <p id="tourDescription">Tour description will appear here.</p>
+                    
+                    <div class="tour-activities mb-4 mt-4">
+                        <h6 class="mb-3">Tour Activities</h6>
+                        <div id="tourActivities" class="activities-list">
+                            <!-- Activities will be inserted here -->
+                        </div>
                     </div>
-                    <div class="col-3">
-                        <img src="../images/travel.jpg" alt="Thumbnail 4" class="img-thumbnail">
+                    
+                    <h6 class="mt-4 mb-2">Highlights</h6>
+                    <ul id="tourHighlights" class="list-unstyled">
+                        <!-- Highlights will be inserted here -->
+                    </ul>
+                </div>
+
+                <!-- Tour Itinerary -->
+                <div id="itinerary" class="tour-itinerary mb-4 section">
+                    <h5 class="section-title mb-3">Itinerary</h5>
+                    <div id="itineraryContainer">
+                        <!-- Itinerary will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Tour Inclusions/Exclusions -->
+                <div class="tour-inclusions-exclusions mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Inclusions</h5>
+                            <ul id="tourInclusions" class="list-unstyled">
+                                <!-- Inclusions will be inserted here -->
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5 class="mb-3">Exclusions</h5>
+                            <ul id="tourExclusions" class="list-unstyled">
+                                <!-- Exclusions will be inserted here -->
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Availability and Dates -->
+                <div class="tour-availability mb-4">
+                    <h5 class="mb-3">Availability</h5>
+                    <div id="tourAvailability" class="mb-3">
+                        <!-- Availability details will be inserted here -->
+                    </div>
+                    
+                    <div class="available-dates mt-4">
+                        <h6 class="mb-3">Upcoming Dates</h6>
+                        <div id="availableDates" class="dates-grid">
+                            <!-- Available dates will be inserted here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tour Guides -->
+                <div class="tour-guides mb-4">
+                    <h5 class="mb-3">Tour Guides</h5>
+                    <div id="guidesContainer" class="guides-container">
+                        <!-- Tour guides will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Cancellation Policy -->
+                <div class="cancellation-policy mb-4">
+                    <h5 class="mb-3">Cancellation Policy</h5>
+                    <p id="cancellationPolicy">Cancellation policy will appear here.</p>
+                </div>
+
+                <!-- Location Map -->
+                <div id="map" class="tour-map mb-4 section">
+                    <h5 class="section-title mb-3">Tour Location</h5>
+                    <div class="map-container">
+                        <div id="tourMap" style="height: 300px;">
+                            <!-- Map will be inserted here -->
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <h6>Meeting Point</h6>
+                        <p id="meetingPoint">Meeting point details will appear here.</p>
+                    </div>
+                </div>
+
+                <!-- Tour Reviews -->
+                <div id="reviews" class="tour-reviews mb-4 section">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h5 class="section-title mb-0">Reviews</h5>
+                        <a href="#" id="viewAllReviewsBtn" class="text-decoration-none">View All</a>
+                    </div>
+                    
+                    <div class="review-summary mb-4">
+                        <div class="row align-items-center">
+                            <div class="col-4 text-center">
+                                <div class="overall-rating">
+                                    <span id="overallRating">4.5</span>
+                                    <div class="stars">
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star text-warning"></i>
+                                        <i class="fas fa-star-half-alt text-warning"></i>
+                                    </div>
+                                    <small id="totalReviews">42 reviews</small>
+                                </div>
+                            </div>
+                            <div class="col-8">
+                                <div class="rating-bars">
+                                    <div class="rating-bar">
+                                        <span>5 Stars</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="fiveStarBar" role="progressbar" style="width: 75%"></div>
+                                        </div>
+                                        <span id="fiveStarCount">30</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>4 Stars</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-success" id="fourStarBar" role="progressbar" style="width: 20%"></div>
+                                        </div>
+                                        <span id="fourStarCount">8</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>3 Stars</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" id="threeStarBar" role="progressbar" style="width: 5%"></div>
+                                        </div>
+                                        <span id="threeStarCount">2</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>2 Stars</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-warning" id="twoStarBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <span id="twoStarCount">0</span>
+                                    </div>
+                                    <div class="rating-bar">
+                                        <span>1 Star</span>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-danger" id="oneStarBar" role="progressbar" style="width: 0%"></div>
+                                        </div>
+                                        <span id="oneStarCount">0</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="reviewsContainer">
+                        <!-- Reviews will be inserted here -->
+                        <div class="text-center py-3" id="noReviewsMessage" style="display: none;">
+                            <p>No reviews yet for this tour.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button id="leaveReviewBtn" class="btn btn-outline-primary">Write a Review</button>
+                    </div>
+                </div>
+                
+                <!-- Related Tours -->
+                <div class="related-tours mb-4">
+                    <h5 class="mb-3">Similar Tours You Might Like</h5>
+                    <div id="relatedToursContainer" class="row">
+                        <!-- Related tours will be inserted here -->
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Tour Info -->
-    <div class="tour-info py-4">
+    <!-- Fixed Date Selection Bar (Shows when user scrolls past availability section) -->
+    <div id="fixedDateBar" class="fixed-date-bar">
         <div class="container">
-            <h4 class="mb-3">New York City Sightseeing Tour</h4>
-            <div class="rating mb-3">
-                <i class="fas fa-star text-warning"></i>
-                <span>4.96</span>
-                <small class="text-muted">(2.5k reviews)</small>
-            </div>
-            <div class="location-time mb-3">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>New York, USA</span>
-                <span class="mx-2">•</span>
-                <i class="far fa-clock"></i>
-                <span>3 hours</span>
-            </div>
-            <div class="price mb-4">
-                <span class="amount">$48.25</span>
-                <span class="per-person">per person</span>
-            </div>
-
-            <!-- Tour Description -->
-            <div class="tour-description mb-4">
-                <h5 class="mb-3">About This Tour</h5>
-                <p>Experience the best of New York City with our comprehensive sightseeing tour. Visit iconic landmarks, hidden gems, and learn about the city's rich history from our expert guides.</p>
-                <ul class="list-unstyled">
-                    <li><i class="fas fa-check text-success me-2"></i>Professional local guide</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Small group size</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Hotel pickup available</li>
-                    <li><i class="fas fa-check text-success me-2"></i>Skip-the-line access</li>
-                </ul>
-            </div>
-
-            <!-- Tour Schedule -->
-            <div class="tour-schedule mb-4">
-                <h5 class="mb-3">Tour Schedule</h5>
-                <div class="schedule-item">
-                    <div class="time">09:00 AM</div>
-                    <div class="activity">
-                        <h6>Hotel Pickup</h6>
-                        <p>Meet your guide at your hotel or designated meeting point</p>
+            <div class="row align-items-center">
+                <div class="col-7">
+                    <div class="date-selection">
+                        <label>Select Date:</label>
+                        <select id="fixedDateSelect" class="form-select form-select-sm">
+                            <option value="">Choose a date</option>
+                            <!-- Dates will be dynamically populated -->
+                        </select>
                     </div>
                 </div>
-                <div class="schedule-item">
-                    <div class="time">10:00 AM</div>
-                    <div class="activity">
-                        <h6>Central Park</h6>
-                        <p>Explore the famous Central Park and its landmarks</p>
-                    </div>
-                </div>
-                <div class="schedule-item">
-                    <div class="time">12:00 PM</div>
-                    <div class="activity">
-                        <h6>Times Square</h6>
-                        <p>Visit the iconic Times Square and surrounding areas</p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Tour Reviews -->
-            <div class="tour-reviews mb-4">
-                <h5 class="mb-3">Reviews</h5>
-                <div class="review-item">
-                    <div class="d-flex align-items-center mb-2">
-                        <img src="../images/person.jpg" alt="Reviewer" class="rounded-circle me-2" style="width: 40px; height: 40px;">
-                        <div>
-                            <h6 class="mb-0">Sarah Johnson</h6>
-                            <small class="text-muted">2 days ago</small>
-                        </div>
-                    </div>
-                    <div class="rating mb-2">
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                        <i class="fas fa-star text-warning"></i>
-                    </div>
-                    <p>Amazing tour! Our guide was very knowledgeable and showed us all the important landmarks. Highly recommend!</p>
+                <div class="col-5">
+                    <button id="fixedBookNowBtn" class="btn btn-primary btn-sm w-100">Book Now</button>
                 </div>
             </div>
         </div>
@@ -140,55 +337,103 @@
         <div class="container">
             <div class="d-flex justify-content-between align-items-center">
                 <div class="price">
-                    <span class="amount">$48.25</span>
+                    <span id="bottomPrice" class="amount">$0.00</span>
                     <span class="per-person">per person</span>
                 </div>
-                <a href="date-selection.html" class="btn btn-primary">Book Now</a>
+                <a href="#" id="bookNowBtn" class="btn btn-primary">Book Now</a>
             </div>
         </div>
     </div>
 
-    <!-- Bottom Navigation -->
-    <nav class="bottom-nav">
-        <div class="container">
-            <div class="row g-0">
-                <div class="col">
-                    <a href="home.html">
-                        <i class="fas fa-home"></i>
-                        <span>Home</span>
-                    </a>
+    <!-- Review Modal -->
+    <div class="modal fade" id="reviewModal" tabindex="-1" aria-labelledby="reviewModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="reviewModalLabel">Write a Review</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="col">
-                    <a href="local-services.html">
-                        <i class="fas fa-store"></i>
-                        <span>Local Services</span>
-                    </a>
+                <div class="modal-body">
+                    <form id="reviewForm">
+                        <div class="mb-3 text-center">
+                            <label class="form-label">Your Rating</label>
+                            <div class="rating-stars">
+                                <i class="far fa-star fa-2x" data-rating="1"></i>
+                                <i class="far fa-star fa-2x" data-rating="2"></i>
+                                <i class="far fa-star fa-2x" data-rating="3"></i>
+                                <i class="far fa-star fa-2x" data-rating="4"></i>
+                                <i class="far fa-star fa-2x" data-rating="5"></i>
+                            </div>
+                            <input type="hidden" id="ratingValue" value="0">
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewTitle" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="reviewTitle" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reviewComment" class="form-label">Your Review</label>
+                            <textarea class="form-control" id="reviewComment" rows="4" required></textarea>
+                        </div>
+                    </form>
                 </div>
-                <div class="col">
-                    <a href="my-trip.html">
-                        <i class="fas fa-suitcase"></i>
-                        <span>My Trip</span>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="ticket.html">
-                        <i class="fas fa-ticket-alt"></i>
-                        <span>Ticket</span>
-                    </a>
-                </div>
-                <div class="col">
-                    <a href="profile.html">
-                        <i class="fas fa-user"></i>
-                        <span>Profile</span>
-                    </a>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" id="submitReviewBtn">Submit Review</button>
                 </div>
             </div>
         </div>
-    </nav>
+    </div>
+
+    <!-- Share Modal -->
+    <div class="modal fade" id="shareModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Share This Tour</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="share-options">
+                        <a href="#" class="share-option" id="shareFacebook">
+                            <i class="fab fa-facebook"></i>
+                            <span>Facebook</span>
+                        </a>
+                        <a href="#" class="share-option" id="shareTwitter">
+                            <i class="fab fa-twitter"></i>
+                            <span>Twitter</span>
+                        </a>
+                        <a href="#" class="share-option" id="shareWhatsapp">
+                            <i class="fab fa-whatsapp"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                        <a href="#" class="share-option" id="shareEmail">
+                            <i class="far fa-envelope"></i>
+                            <span>Email</span>
+                        </a>
+                    </div>
+                    <div class="copy-link mt-4">
+                        <label class="form-label">Tour Link</label>
+                        <div class="input-group">
+                            <input type="text" id="tourLink" class="form-control" readonly>
+                            <button class="btn btn-outline-secondary" type="button" id="copyLinkBtn">Copy</button>
+                        </div>
+                        <small id="linkCopiedMessage" class="text-success mt-1" style="display:none;">Link copied to clipboard!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Swiper JS -->
+    <script src="https://cdn.jsdelivr.net/npm/swiper@9/swiper-bundle.min.js"></script>
+    <!-- Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap" defer></script>
     <!-- Custom JS -->
-    <script src="../js/main.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/utils/api.js"></script>
+    <script src="js/utils/auth.js"></script>
+    <script src="js/tour-details.js"></script>
 </body>
 </html> 

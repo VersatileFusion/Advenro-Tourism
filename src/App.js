@@ -1,56 +1,102 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ThemeProvider, CssBaseline } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers';
-import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { ToastProvider } from './components/common/ToastNotifications';
-import { AuthProvider } from './contexts/AuthContext';
-import theme from './theme';
+/**
+ * Main Express application file
+ * Sets up routes, middleware, and server configuration
+ */
 
-// Layout components
-import Layout from './components/layout/Layout';
-import PrivateRoute from './components/auth/PrivateRoute';
+const express = require('express');
+const path = require('path');
+const morgan = require('morgan');
+const cookieParser = require('cookie-parser');
+const cors = require('cors');
+const helmet = require('helmet');
+const compression = require('compression');
+const rateLimit = require('express-rate-limit');
 
-// Page components
-import Home from './pages/Home';
-import AdminDashboard from './components/admin/AdminDashboard';
-import Documentation from './components/docs/Documentation';
-import BookingComIntegration from './components/hotels/BookingComIntegration';
-import OfflineSupport from './components/common/OfflineSupport';
+// Import routes
+const hotelRoutes = require('./routes/hotels');
+const flightRoutes = require('./routes/flights');
+const tourRoutes = require('./routes/tours');
+const eventRoutes = require('./routes/events');
+const restaurantRoutes = require('./routes/restaurants');
+const localServiceRoutes = require('./routes/localServices');
+const userRoutes = require('./routes/users');
+const authRoutes = require('./routes/auth');
+const bookingRoutes = require('./routes/bookings');
+const adminRoutes = require('./routes/admin');
+const notificationRoutes = require('./routes/notifications');
 
-function App() {
-  return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <LocalizationProvider dateAdapter={AdapterDateFns}>
-        <AuthProvider>
-          <ToastProvider>
-            <Router>
-              <Layout>
-                <OfflineSupport />
-                <Routes>
-                  <Route path="/" element={<Home />} />
-                  <Route path="/docs" element={<Documentation />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <PrivateRoute>
-                        <AdminDashboard />
-                      </PrivateRoute>
-                    }
-                  />
-                  <Route
-                    path="/hotels/booking"
-                    element={<BookingComIntegration />}
-                  />
-                </Routes>
-              </Layout>
-            </Router>
-          </ToastProvider>
-        </AuthProvider>
-      </LocalizationProvider>
-    </ThemeProvider>
-  );
-}
+// Import middleware
+const errorHandler = require('./middleware/errorHandler');
+const { notFound } = require('./middleware/notFound');
 
-export default App; 
+// Create Express app
+const app = express();
+
+// Set view engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, '../views'));
+
+// Apply middleware
+app.use(morgan('dev'));
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
+app.use(cookieParser());
+app.use(cors());
+app.use(compression());
+
+// Security middleware
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'code.jquery.com', 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'cdn.jsdelivr.net', 'cdnjs.cloudflare.com'],
+        imgSrc: ["'self'", 'data:', 'blob:', 'cdn.jsdelivr.net', 'res.cloudinary.com'],
+        fontSrc: ["'self'", 'cdnjs.cloudflare.com'],
+        connectSrc: ["'self'", 'api.mapbox.com', 'api.stripe.com'],
+      },
+    },
+  })
+);
+
+// Rate limiting
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // limit each IP to 100 requests per windowMs
+  message: 'Too many requests from this IP, please try again later.',
+});
+app.use('/api/', apiLimiter);
+
+// Serve static files
+app.use(express.static(path.join(__dirname, '../public')));
+
+// API routes
+app.use('/api/v1/hotels', hotelRoutes);
+app.use('/api/v1/flights', flightRoutes);
+app.use('/api/v1/tours', tourRoutes);
+app.use('/api/v1/events', eventRoutes);
+app.use('/api/v1/restaurants', restaurantRoutes);
+app.use('/api/v1/local-services', localServiceRoutes);
+app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/bookings', bookingRoutes);
+app.use('/api/v1/admin', adminRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
+
+// Serve the main HTML file for all routes (client-side routing)
+app.get('*', (req, res) => {
+  // Skip API routes and static files
+  if (req.url.startsWith('/api') || req.url.includes('.')) {
+    return notFound(req, res);
+  }
+  
+  // Serve the main HTML file
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
+// Error handling
+app.use(notFound);
+app.use(errorHandler);
+
+module.exports = app; 

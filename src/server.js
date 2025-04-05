@@ -12,6 +12,7 @@ const connectDB = require("./config/database");
 const path = require("path");
 const fileUpload = require("express-fileupload");
 const errorHandler = require("./middleware/error");
+const { authenticate } = require("./middleware/auth");
 
 // Load env vars
 console.log("🔧 Loading environment variables...");
@@ -37,6 +38,7 @@ const restaurants = require("./routes/restaurants");
 const events = require("./routes/eventRoutes");
 const payments = require("./routes/payments");
 const destinations = require("./routes/destinations");
+const notifications = require("./routes/notifications");
 
 const app = express();
 
@@ -154,6 +156,39 @@ app.use("/api/restaurants", restaurants);
 app.use("/api/events", events);
 app.use("/api/payments", payments);
 app.use("/api/destinations", destinations);
+app.use("/api/notifications", notifications);
+
+// Offline sync endpoint
+app.post("/api/offline/sync", authenticate, (req, res) => {
+  const { actions } = req.body;
+
+  if (!actions || !Array.isArray(actions)) {
+    return res.status(400).json({
+      success: false,
+      message: "Invalid sync data format",
+    });
+  }
+
+  console.log(
+    `Processing ${actions.length} offline actions for user ${req.user.id}`
+  );
+
+  // Process each action based on its type
+  const results = actions.map((action) => {
+    // In a real implementation, you would process each action
+    // based on its type and target
+    return {
+      id: action.id,
+      success: true,
+      message: `Processed action ${action.type}`,
+    };
+  });
+
+  res.json({
+    success: true,
+    results,
+  });
+});
 
 // Legacy v1 routes - keep for backward compatibility
 app.use("/api/v1/auth", auth);
@@ -169,6 +204,7 @@ app.use("/api/v1/mongodb-hotels", mongodbHotels);
 app.use("/api/v1/local-services", localServices);
 app.use("/api/v1/restaurants", restaurants);
 app.use("/api/v1/events", events);
+app.use("/api/v1/notifications", notifications);
 
 // Error handler
 app.use(errorHandler);

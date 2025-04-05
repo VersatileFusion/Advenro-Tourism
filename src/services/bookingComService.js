@@ -365,6 +365,66 @@ class BookingComService {
             throw new ErrorResponse('Failed to retrieve hotel reviews from API', 500);
         }
     }
+
+    /**
+     * Get nearby attractions for a hotel
+     * @param {string} hotelId Hotel ID
+     * @param {Object} params Additional parameters
+     * @returns {Promise<Array>} List of nearby attractions
+     */
+    async getNearbyAttractions(hotelId, params = {}) {
+        try {
+            const cacheKey = this.generateCacheKey('nearby', hotelId, params);
+            
+            return this.getCachedData(
+                cacheKey,
+                async () => {
+                    const response = await this.apiClient.get('/hotels/nearby-places', {
+                        params: {
+                            hotel_id: hotelId,
+                            locale: params.locale || 'en-gb',
+                            radius: params.radius || 3, // kilometers
+                            types: params.types || 'landmark,restaurant,shopping,museum,entertainment'
+                        }
+                    });
+                    
+                    if (!response.data) {
+                        throw new ErrorResponse('Invalid response from nearby attractions API', 500);
+                    }
+                    
+                    // Process and categorize the attractions
+                    const attractions = Array.isArray(response.data) ? response.data : [];
+                    
+                    // Add additional metadata and formatting
+                    return attractions.map(attraction => ({
+                        ...attraction,
+                        distance_formatted: this.formatDistance(attraction.distance || 0)
+                    }));
+                },
+                { ttl: this.cacheTTL.static }
+            );
+        } catch (error) {
+            console.error('Error in getNearbyAttractions:', error);
+            throw new ErrorResponse('Failed to retrieve nearby attractions', 500);
+        }
+    }
+    
+    /**
+     * Format distance for display
+     * @param {number} distance Distance in kilometers
+     * @returns {string} Formatted distance
+     * @private
+     */
+    formatDistance(distance) {
+        if (distance < 1) {
+            // Convert to meters for distances less than 1km
+            const meters = Math.round(distance * 1000);
+            return `${meters} m`;
+        } else {
+            // Round to 1 decimal place for kilometers
+            return `${distance.toFixed(1)} km`;
+        }
+    }
 }
 
 exports.createBooking = async (hotelId, bookingData, userId) => {

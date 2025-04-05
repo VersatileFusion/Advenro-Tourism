@@ -189,3 +189,69 @@ exports.getPopularDestinations = catchAsync(async (req, res, next) => {
     return next(new AppError("Failed to fetch popular destinations", 500));
   }
 });
+
+/**
+ * Get related destinations based on destination ID
+ * @route GET /api/destinations/:id/related
+ * @access Public
+ */
+exports.getRelatedDestinations = catchAsync(async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const { limit = 4 } = req.query;
+
+    // First, get the source destination
+    const destination = await Destination.findById(id);
+    if (!destination) {
+      return next(new AppError("Destination not found", 404));
+    }
+
+    // Build a query to find similar destinations
+    const query = {
+      _id: { $ne: id }, // Exclude the current destination
+      $or: [
+        { country: destination.country }, // Same country
+        { region: destination.region }, // Same region
+        { climate: destination.climate }, // Same climate
+      ]
+    };
+
+    // Add activities match if the destination has activities
+    if (destination.activities && destination.activities.length > 0) {
+      query.$or.push({
+        activities: { $in: destination.activities }
+      });
+    }
+
+    // Find related destinations
+    const relatedDestinations = await Destination.find(query)
+      .limit(parseInt(limit))
+      .select("name description image images location rating");
+
+    // If we don't have enough related destinations, get some popular ones
+    if (relatedDestinations.length < parseInt(limit)) {
+      const remainingCount = parseInt(limit) - relatedDestinations.length;
+      const popularDestinations = await Destination.find({
+        _id: { 
+          $ne: id, // Exclude current destination
+          $nin: relatedDestinations.map(d => d._id) // Exclude already found related destinations
+        }
+      })
+        .sort({ rating: -1 })
+        .limit(remainingCount)
+        .select("name description image images location rating");
+
+      // Combine the results
+      relatedDestinations.push(...popularDestinations);
+    }
+
+    return sendSuccessResponse(
+      res,
+      relatedDestinations,
+      "Related destinations retrieved successfully"
+    );
+  } catch (error) {
+    console.error("Error fetching related destinations:", error);
+    return next(new AppError("Failed to fetch related destinations", 500));
+  }
+});

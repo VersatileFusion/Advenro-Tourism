@@ -258,10 +258,74 @@ exports.updateSettings = async (req, res) => {
 // Google authentication
 exports.googleAuth = async (req, res) => {
     try {
-        // Implement Google OAuth logic here
-        res.status(501).json({
-            success: false,
-            message: 'Google authentication not implemented yet'
+        const { idToken } = req.body;
+        
+        if (!idToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'ID token is required'
+            });
+        }
+
+        // In a real implementation, you would:
+        // 1. Verify the Google ID token using Google API client library
+        // 2. Extract user information from the token payload
+        // 3. Create or update the user in your database
+
+        // For demonstration, we'll create a mock implementation
+        const googleUserId = crypto.randomBytes(16).toString('hex'); // In reality, extracted from verified token
+        
+        // Check if user exists with this Google ID
+        let user = await User.findOne({ 'social.google.id': googleUserId });
+        
+        if (!user) {
+            // Mock user data that would come from the Google token
+            const userData = {
+                email: `google_${googleUserId}@example.com`, // In reality, from token
+                firstName: 'Google',
+                lastName: 'User',
+                profilePicture: 'https://example.com/default-profile.jpg'
+            };
+            
+            // Create new user if not exists
+            user = new User({
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email,
+                avatar: userData.profilePicture,
+                password: crypto.randomBytes(20).toString('hex'), // Random password for social users
+                social: {
+                    google: {
+                        id: googleUserId,
+                        token: idToken
+                    }
+                }
+            });
+            
+            await user.save();
+        } else {
+            // Update the token
+            user.social.google.token = idToken;
+            await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (error) {
         console.error('Google auth error:', error);
@@ -275,10 +339,74 @@ exports.googleAuth = async (req, res) => {
 // Facebook authentication
 exports.facebookAuth = async (req, res) => {
     try {
-        // Implement Facebook OAuth logic here
-        res.status(501).json({
-            success: false,
-            message: 'Facebook authentication not implemented yet'
+        const { accessToken } = req.body;
+        
+        if (!accessToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'Access token is required'
+            });
+        }
+
+        // In a real implementation, you would:
+        // 1. Verify the Facebook access token with Facebook Graph API
+        // 2. Get user profile information from Facebook
+        // 3. Create or update the user in your database
+
+        // For demonstration, we'll create a mock implementation
+        const facebookUserId = crypto.randomBytes(16).toString('hex'); // In reality, from FB API response
+        
+        // Check if user exists with this Facebook ID
+        let user = await User.findOne({ 'social.facebook.id': facebookUserId });
+        
+        if (!user) {
+            // Mock user data that would come from the Facebook API
+            const userData = {
+                email: `facebook_${facebookUserId}@example.com`, // In reality, from FB API
+                firstName: 'Facebook',
+                lastName: 'User',
+                profilePicture: 'https://example.com/default-profile.jpg'
+            };
+            
+            // Create new user if not exists
+            user = new User({
+                firstName: userData.firstName,
+                lastName: userData.lastName,
+                email: userData.email,
+                avatar: userData.profilePicture,
+                password: crypto.randomBytes(20).toString('hex'), // Random password for social users
+                social: {
+                    facebook: {
+                        id: facebookUserId,
+                        token: accessToken
+                    }
+                }
+            });
+            
+            await user.save();
+        } else {
+            // Update the token
+            user.social.facebook.token = accessToken;
+            await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role
+            }
         });
     } catch (error) {
         console.error('Facebook auth error:', error);
@@ -322,6 +450,181 @@ exports.updateAvatar = async (req, res) => {
         });
     } catch (error) {
         console.error('Update avatar error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// Apple authentication
+exports.appleAuth = async (req, res) => {
+    try {
+        const { identityToken } = req.body;
+
+        if (!identityToken) {
+            return res.status(400).json({
+                success: false,
+                message: 'Identity token is required'
+            });
+        }
+
+        // In a real implementation, you would:
+        // 1. Verify the Apple identity token
+        // 2. Extract user information from the token
+        // 3. Create or update the user in your database
+
+        // For demonstration, we'll create a mock implementation
+        const appleUserId = crypto.randomBytes(16).toString('hex'); // Simulate Apple user ID extraction
+        
+        // Check if user exists with this Apple ID
+        let user = await User.findOne({ 'social.apple.id': appleUserId });
+        
+        if (!user) {
+            // Create new user if not exists
+            const email = `apple_${appleUserId}@example.com`; // In reality, extract from token
+            user = new User({
+                firstName: 'Apple',
+                lastName: 'User',
+                email,
+                password: crypto.randomBytes(20).toString('hex'),
+                social: {
+                    apple: {
+                        id: appleUserId,
+                        token: identityToken
+                    }
+                }
+            });
+            
+            await user.save();
+        } else {
+            // Update the token
+            user.social.apple.token = identityToken;
+            await user.save();
+        }
+
+        // Generate JWT token
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Apple auth error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// Refresh token
+exports.refreshToken = async (req, res) => {
+    try {
+        // Get user from middleware
+        const user = await User.findById(req.user.id);
+        
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: 'Not authorized'
+            });
+        }
+
+        // Generate new JWT token
+        const token = jwt.sign(
+            { id: user._id },
+            process.env.JWT_SECRET,
+            { expiresIn: process.env.JWT_EXPIRES_IN }
+        );
+
+        res.json({
+            success: true,
+            token,
+            user: {
+                id: user._id,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                role: user.role
+            }
+        });
+    } catch (error) {
+        console.error('Refresh token error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+};
+
+// Get active sessions
+exports.getSessions = async (req, res) => {
+    try {
+        // In a real implementation, you would:
+        // 1. Query a sessions collection that tracks user sessions
+        // 2. Return active sessions for the current user
+        
+        // For demonstration purposes, we'll return mock data
+        const mockSessions = [
+            {
+                id: '1',
+                device: 'Chrome on Windows',
+                ipAddress: '192.168.1.1',
+                lastActive: new Date(),
+                isCurrent: true
+            },
+            {
+                id: '2',
+                device: 'Mobile App on Android',
+                ipAddress: '192.168.1.2', 
+                lastActive: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+                isCurrent: false
+            }
+        ];
+        
+        res.json({
+            success: true,
+            sessions: mockSessions
+        });
+    } catch (error) {
+        console.error('Get sessions error:', error);
+        res.status(500).json({
+            success: false, 
+            message: 'Server error'
+        });
+    }
+};
+
+// Terminate session
+exports.terminateSession = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        // In a real implementation, you would:
+        // 1. Find the session in your sessions collection
+        // 2. Verify the session belongs to the current user
+        // 3. Invalidate/remove the session
+
+        // For demonstration purposes, we'll just return success
+        res.json({
+            success: true,
+            message: 'Session terminated'
+        });
+    } catch (error) {
+        console.error('Terminate session error:', error);
         res.status(500).json({
             success: false,
             message: 'Server error'

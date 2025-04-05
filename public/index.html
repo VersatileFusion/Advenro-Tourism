@@ -3,1472 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Advenro - Travel & Tours</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>Advenro - Travel & Tourism Services</title>
+    <!-- Favicon -->
+    <link rel="shortcut icon" href="img/favicon.ico" type="image/x-icon">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css">
+    <!-- Custom styles -->
+    <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/screens.css">
     <link rel="stylesheet" href="css/navbar.css">
     <!-- Add Swiper CSS -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
+    <link rel="stylesheet" href="/css/main.css">
+    <link rel="stylesheet" href="/css/components/search-bar.css">
+    <link rel="stylesheet" href="/css/components/featured-events.css">
 </head>
 <body>
-    <!-- Search Section -->
-    <div class="search-section">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
         <div class="container">
-            <div class="search-container">
-                <div class="search-bar">
-                    <i class="fas fa-search"></i>
-                    <input type="text" class="search-input">
-                </div>
-                <button class="btn-filter" type="button" data-bs-toggle="offcanvas" data-bs-target="#filterPanel">
-                    <i class="fas fa-bars"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Filter Panel -->
-    <div class="offcanvas offcanvas-start" tabindex="-1" id="filterPanel">
-        <div class="offcanvas-header">
-            <button type="button" class="btn-close" data-bs-dismiss="offcanvas">
-                <i class="fas fa-times"></i>
-            </button>
-            <h5 class="offcanvas-title">Filters</h5>
-        </div>
-        <div class="offcanvas-body">
-            <div class="filter-menu">
-                <a href="#" class="filter-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <span>Location</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="#" class="filter-item">
-                    <i class="fas fa-umbrella-beach"></i>
-                    <span>Tour&Activities</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="#" class="filter-item">
-                    <i class="fas fa-hotel"></i>
-                    <span>Hotels&Stays</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="#" class="filter-item">
-                    <i class="fas fa-utensils"></i>
-                    <span>Food&Drink</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="#" class="filter-item">
-                    <i class="fas fa-theater-masks"></i>
-                    <span>Festival&Event</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-                <a href="#" class="filter-item">
-                    <i class="fas fa-monument"></i>
-                    <span>Attraction</span>
-                    <i class="fas fa-chevron-right"></i>
-                </a>
-            </div>
-        </div>
-        <div class="offcanvas-footer">
-            <div class="filter-actions">
-                <button class="btn-clear">Clear All</button>
-                <button class="btn-apply">Apply</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Main Categories -->
-    <div class="categories-grid">
-        <div class="category-box" onclick="window.location.href='tours-activities.html'" data-drawer="tours-activities">
-            <img src="icons/tour&activities-icon.png" alt="Tour & Activities" class="category-icon">
-            <span class="category-name">Tour & Activities</span>
-        </div>
-        <div class="category-box" onclick="window.location.href='food-drinks.html'" data-drawer="food-drinks">
-            <img src="icons/food&drink-icon.png" alt="Food & Drinks" class="category-icon">
-            <span class="category-name">Food & Drinks</span>
-        </div>
-        <div class="category-box" onclick="window.location.href='hotels-stays.html'" data-drawer="hotels-stays">
-            <img src="icons/hotel&stays-icon.png" alt="Hotels & Stays" class="category-icon">
-            <span class="category-name">Hotels & Stays</span>
-        </div>
-        <div class="category-box" onclick="window.location.href='festivals-events.html'" data-drawer="festivals-events">
-            <img src="icons/festival&events-icon.png" alt="Festivals & Events" class="category-icon">
-            <span class="category-name">Festivals & Events</span>
-        </div>
-        <div class="category-box" onclick="window.location.href='attractions.html'" data-drawer="attractions">
-            <img src="icons/attractions-icon.png" alt="Attractions" class="category-icon">
-            <span class="category-name">Attractions</span>
-        </div>
-        <div class="category-box" data-drawer="all">
-            <!-- <img src="icons/all-icon.png" alt="All" class="category-icon"> -->
-            <span class="category-name">All</span>
-        </div>
-    </div>
-
-    <!-- Category Tags -->
-    <div class="category-tags">
-        <div class="swiper category-swiper">
-            <div class="swiper-wrapper">
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/sports-icon.png" alt="Sports">
-                        </div>
-                        <span>Sports</span>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/Culinary.png" alt="Food">
-                        </div>
-                        <span>Food</span>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/Group-3.png" alt="Artistic">
-                        </div>
-                        <span>Artistic</span>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/Group-4.png" alt="Horror">
-                        </div>
-                        <span>Horror</span>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/Group-5.png" alt="Fantasy">
-                        </div>
-                        <span>Fantasy</span>
-                    </div>
-                </div>
-                <div class="swiper-slide">
-                    <div class="category-tag">
-                        <div class="category-icon">
-                            <img src="icons/Adventure.png" alt="Adventure">
-                        </div>
-                        <span>Adventure</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Tour Cards -->
-    <div class="tour-card">
-        <div class="position-relative">
-            <img src="images/nyc-liberty.png" alt="New York City sightseeing tour" class="card-img-top">
-            <span class="tour-tag">Tour</span>
-            <button class="btn-like">
-                <i class="far fa-heart"></i>
-            </button>
-            <div class="rating-wrapper">
-                <i class="fas fa-star"></i>
-                <span class="rating-score">4.96</span>
-                <span class="text-muted">(672 reviews)</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">New York City sightseeing tour</h5>
-            <div class="location">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>NYC,US</span>
-            </div>
-            <div class="time">
-                <i class="far fa-clock"></i>
-                <span>Feb 14, 12Am</span>
-            </div>
-            <div class="price-book-wrapper">
-                <div class="price">
-                    <span class="amount">$48.25</span>
-                    <span class="per-person">/ person</span>
-                </div>
-                <button class="btn-book">Book Now</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="tour-card">
-        <div class="position-relative">
-            <img src="images/nyc-liberty.png" alt="Paris Food Tour" class="card-img-top">
-            <span class="tour-tag">Food</span>
-            <button class="btn-like">
-                <i class="far fa-heart"></i>
-            </button>
-            <div class="rating-wrapper">
-                <i class="fas fa-star"></i>
-                <span class="rating-score">4.88</span>
-                <span class="text-muted">(425 reviews)</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Paris Food & Wine Tasting Experience</h5>
-            <div class="location">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>Paris, France</span>
-            </div>
-            <div class="time">
-                <i class="far fa-clock"></i>
-                <span>Feb 15, 6PM</span>
-            </div>
-            <div class="price-book-wrapper">
-                <div class="price">
-                    <span class="amount">$75.00</span>
-                    <span class="per-person">/ person</span>
-                </div>
-                <button class="btn-book">Book Now</button>
-            </div>
-        </div>
-    </div>
-
-    <div class="tour-card">
-        <div class="position-relative">
-            <img src="images/nyc-liberty.png" alt="Tokyo Night Tour" class="card-img-top">
-            <span class="tour-tag">Night Tour</span>
-            <button class="btn-like">
-                <i class="far fa-heart"></i>
-            </button>
-            <div class="rating-wrapper">
-                <i class="fas fa-star"></i>
-                <span class="rating-score">4.92</span>
-                <span class="text-muted">(891 reviews)</span>
-            </div>
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">Tokyo Night Life & Street Food Tour</h5>
-            <div class="location">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>Tokyo, Japan</span>
-            </div>
-            <div class="time">
-                <i class="far fa-clock"></i>
-                <span>Feb 16, 8PM</span>
-            </div>
-            <div class="price-book-wrapper">
-                <div class="price">
-                    <span class="amount">$65.50</span>
-                    <span class="per-person">/ person</span>
-                </div>
-                <button class="btn-book">Book Now</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation -->
-    <nav class="bottom-navbar">
-        <div class="nav-buttons">
-            <a href="index.html" class="nav-btn active">
-                <i class="fas fa-home"></i>
-                <span>Home</span>
+            <a class="navbar-brand" href="/">
+                <img src="img/logo.png" alt="Advenro Logo" height="40">
             </a>
-            <a href="local-services.html" class="nav-btn auth-required">
-                <i class="fas fa-map-marker-alt"></i>
-                <span>Local Services</span>
-            </a>
-            <a href="my-trip.html" class="nav-btn">
-                <i class="fas fa-suitcase"></i>
-                <span>My Trip</span>
-            </a>
-            <a href="profile.html" class="nav-btn">
-                <i class="fas fa-user"></i>
-                <span>Profile</span>
-            </a>
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ml-auto">
+                    <li class="nav-item active">
+                        <a class="nav-link" href="/" data-route="/">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/hotels" data-route="/hotels">Hotels</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/flights" data-route="/flights">Flights</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/tours" data-route="/tours">Tours</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/events" data-route="/events">Events</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="/restaurants" data-route="/restaurants">Restaurants</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            More
+                        </a>
+                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                            <a class="dropdown-item" href="/local-services" data-route="/local-services">Local Services</a>
+                            <a class="dropdown-item" href="/destinations" data-route="/destinations">Destinations</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="/docs" data-route="/docs">Documentation</a>
+                        </div>
+                    </li>
+                    <!-- Non-auth links -->
+                    <li class="nav-item non-auth-link">
+                        <a class="nav-link" href="/login" data-route="/login">Log In</a>
+                    </li>
+                    <li class="nav-item non-auth-link">
+                        <a class="nav-link btn btn-primary text-white px-3" href="/signup" data-route="/signup">Sign Up</a>
+                    </li>
+                    <!-- Auth links (hidden by default) -->
+                    <li class="nav-item dropdown auth-link d-none">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <img src="img/avatar.jpg" alt="User" class="avatar rounded-circle mr-2" width="24" height="24">
+                            <span id="username">User</span>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-right" aria-labelledby="userDropdown">
+                            <a class="dropdown-item" href="/profile" data-route="/profile">My Profile</a>
+                            <a class="dropdown-item" href="/bookings" data-route="/bookings">My Bookings</a>
+                            <a class="dropdown-item admin-link d-none" href="/admin" data-route="/admin">Admin Dashboard</a>
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" id="logout-btn">Logout</a>
+                        </div>
+                    </li>
+                    <!-- Notification bell -->
+                    <li class="nav-item auth-link d-none">
+                        <div id="notification-container">
+                            <!-- Notification component will be loaded here -->
+                        </div>
+                    </li>
+                </ul>
+            </div>
         </div>
     </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
-    <script src="js/screens.js"></script>
-    <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Handle category box clicks
-        const categoryBoxes = document.querySelectorAll('.category-box');
-        categoryBoxes.forEach(box => {
-            box.addEventListener('click', function() {
-                const drawerType = this.dataset.drawer;
-                if (drawerType === 'all') {
-                    return; // Handle "All" differently if needed
-                }
-                
-                // Get the template for this drawer
-                const template = document.getElementById(`${drawerType}-drawer`);
-                if (!template) return;
-                
-                // Clone the template content
-                const drawer = template.content.cloneNode(true).querySelector('.side-drawer');
-                
-                // Remove any existing drawer
-                const existingDrawer = document.querySelector('.side-drawer');
-                if (existingDrawer) {
-                    existingDrawer.remove();
-                }
-                
-                // Add the new drawer to the body
-                document.body.appendChild(drawer);
-                
-                // Show the drawer
-                requestAnimationFrame(() => {
-                    drawer.classList.add('open');
-                });
-                
-                // Handle checkbox clicks in the drawer
-                const checkboxes = drawer.querySelectorAll('.custom-checkbox');
-                checkboxes.forEach(checkbox => {
-                    checkbox.addEventListener('click', function() {
-                        if (this.dataset.value === 'all') {
-                            checkboxes.forEach(cb => {
-                                if (cb !== this) {
-                                    cb.classList.remove('checked');
-                                }
-                            });
-                        } else {
-                            drawer.querySelector('[data-value="all"]').classList.remove('checked');
-                        }
-                        this.classList.toggle('checked');
-                    });
-                });
-                
-                // Handle back button click
-                const backButton = drawer.querySelector('.back-button');
-                backButton.addEventListener('click', function() {
-                    drawer.classList.remove('open');
-                    setTimeout(() => {
-                        drawer.remove();
-                    }, 300); // Wait for animation to complete
-                });
-            });
-        });
+    <!-- Offline alert (hidden by default) -->
+    <div id="offline-alert" class="alert alert-warning text-center mb-0 d-none" role="alert">
+        <i class="fas fa-wifi mr-2"></i> You are currently offline. Some features may be unavailable.
+    </div>
 
-        // Handle Ticket button click
-        const ticketButton = document.querySelector('a[href="ticket.html"]');
-        if (ticketButton) {
-            ticketButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                
-                // Get the template for the ticket drawer
-                const template = document.getElementById('ticket-drawer');
-                if (!template) return;
-                
-                // Clone the template content
-                const drawer = template.content.cloneNode(true).querySelector('.side-drawer');
-                
-                // Remove any existing drawer
-                const existingDrawer = document.querySelector('.side-drawer');
-                if (existingDrawer) {
-                    existingDrawer.remove();
-                }
-                
-                // Add the new drawer to the body
-                document.body.appendChild(drawer);
-                
-                // Show the drawer
-                requestAnimationFrame(() => {
-                    drawer.classList.add('open');
-                });
-                
-                // Handle back button click
-                const backButton = drawer.querySelector('.back-button');
-                backButton.addEventListener('click', function() {
-                    drawer.classList.remove('open');
-                    setTimeout(() => {
-                        drawer.remove();
-                    }, 300);
-                });
+    <!-- Main content area -->
+    <main id="main-content">
+        <!-- Content will be loaded here dynamically -->
+    </main>
 
-                // Handle service item clicks
-                const serviceItems = drawer.querySelectorAll('.service-item');
-                serviceItems.forEach(item => {
-                    item.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        // Handle navigation to specific service pages
-                        const serviceName = this.querySelector('.service-info span').textContent.toLowerCase();
-                        window.location.href = `${serviceName}.html`;
-                    });
-                });
-            });
-        }
-
-        // Handle Auth button click
-        const authButton = document.getElementById('authButton');
-        if (authButton) {
-            authButton.addEventListener('click', function(e) {
-                e.preventDefault();
-                window.location.href = 'signin.html';
-            });
-        }
-
-        // Function to check if user is logged in
-        function isUserLoggedIn() {
-            return localStorage.getItem('userToken') !== null;
-        }
-
-        // Function to update navigation based on auth status
-        function updateNavigation() {
-            const isLoggedIn = isUserLoggedIn();
-            document.body.setAttribute('data-auth', isLoggedIn);
-        }
-
-        // Initial update of navigation
-        updateNavigation();
-
-        // Listen for auth state changes
-        window.addEventListener('storage', function(e) {
-            if (e.key === 'userToken') {
-                updateNavigation();
-            }
-        });
-    });
-    </script>
-
-    <!-- Drawer Templates -->
-    <template id="tours-activities-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Tour&Activities</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="filter-section">
-                    <h2 class="filter-title">Category</h2>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="all"></div>
-                            <span class="checkbox-label">All Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="city"></div>
-                            <span class="checkbox-label">City Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="adventure"></div>
-                            <span class="checkbox-label">Adventure Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="cultural"></div>
-                            <span class="checkbox-label">Cultural Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="nature"></div>
-                            <span class="checkbox-label">Nature Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="luxury"></div>
-                            <span class="checkbox-label">Luxury Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="group"></div>
-                            <span class="checkbox-label">Group Tours</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="private"></div>
-                            <span class="checkbox-label">Private Tours</span>
-                        </div>
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white py-5 mt-5">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4 mb-md-0">
+                    <h5>About Advenro</h5>
+                    <p class="text-muted">Advenro is a comprehensive travel and tourism platform offering hotels, flights, tours, and local experiences around the world.</p>
+                    <div class="social-icons">
+                        <a href="#" class="text-light mr-3"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-light mr-3"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-light mr-3"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-light"><i class="fab fa-linkedin-in"></i></a>
                     </div>
                 </div>
-                <div class="divider"></div>
-                <div class="filter-section">
-                    <h2 class="filter-title">Price range</h2>
-                    <div class="price-range">
-                        <div class="range-values">
-                            <span class="range-value">$78</span>
-                            <span class="range-value">$143</span>
-                        </div>
-                        <div class="range-slider">
-                            <div class="range-line"></div>
-                        </div>
-                    </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5>Services</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/hotels" class="text-muted">Hotels</a></li>
+                        <li><a href="/flights" class="text-muted">Flights</a></li>
+                        <li><a href="/tours" class="text-muted">Tours</a></li>
+                        <li><a href="/events" class="text-muted">Events</a></li>
+                        <li><a href="/restaurants" class="text-muted">Restaurants</a></li>
+                    </ul>
                 </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="food-drinks-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Food&Drinks</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="filter-section">
-                    <h2 class="filter-title">Cuisine Type</h2>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="all"></div>
-                            <span class="checkbox-label">All Cuisines</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="italian"></div>
-                            <span class="checkbox-label">Italian</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="chinese"></div>
-                            <span class="checkbox-label">Chinese</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="japanese"></div>
-                            <span class="checkbox-label">Japanese</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="mexican"></div>
-                            <span class="checkbox-label">Mexican</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="indian"></div>
-                            <span class="checkbox-label">Indian</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="middle-eastern"></div>
-                            <span class="checkbox-label">Middle Eastern</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="american"></div>
-                            <span class="checkbox-label">American</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="french"></div>
-                            <span class="checkbox-label">French</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="vegetarian"></div>
-                            <span class="checkbox-label">Vegetarian</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="vegan"></div>
-                            <span class="checkbox-label">Vegan</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="seafood"></div>
-                            <span class="checkbox-label">Seafood</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="bbq"></div>
-                            <span class="checkbox-label">BBQ</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="fast-food"></div>
-                            <span class="checkbox-label">Fast Food</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="desserts"></div>
-                            <span class="checkbox-label">Desserts</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="beverages"></div>
-                            <span class="checkbox-label">Beverages</span>
-                        </div>
-                    </div>
+                <div class="col-md-2 mb-4 mb-md-0">
+                    <h5>Support</h5>
+                    <ul class="list-unstyled">
+                        <li><a href="/help" class="text-muted">Help Center</a></li>
+                        <li><a href="/faq" class="text-muted">FAQ</a></li>
+                        <li><a href="/contact" class="text-muted">Contact Us</a></li>
+                        <li><a href="/terms" class="text-muted">Terms of Service</a></li>
+                        <li><a href="/privacy" class="text-muted">Privacy Policy</a></li>
+                    </ul>
                 </div>
-                <div class="divider"></div>
-                <div class="filter-section">
-                    <h2 class="filter-title">Price range</h2>
-                    <div class="price-range">
-                        <div class="range-values">
-                            <span class="range-value">$78</span>
-                            <span class="range-value">$143</span>
-                        </div>
-                        <div class="range-slider">
-                            <div class="range-line"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="festivals-events-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Festival&Event</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="filter-section">
-                    <h2 class="filter-title">Type of Event</h2>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="all"></div>
-                            <span class="checkbox-label">All</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="music"></div>
-                            <span class="checkbox-label">Music Festival</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="art"></div>
-                            <span class="checkbox-label">Art&Culture</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="food"></div>
-                            <span class="checkbox-label">Food&Drinks</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="sport"></div>
-                            <span class="checkbox-label">Sport Events</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="seasonal"></div>
-                            <span class="checkbox-label">Seasonal Events</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="family"></div>
-                            <span class="checkbox-label">Family-Friendly Events</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="divider"></div>
-                <div class="filter-section">
-                    <h2 class="filter-title">Price range</h2>
-                    <div class="price-range">
-                        <div class="range-values">
-                            <span class="range-value">$78</span>
-                            <span class="range-value">$143</span>
-                        </div>
-                        <div class="range-slider">
-                            <div class="range-line"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="hotels-stays-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Hotels&Stays</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="form-section">
-                    <div class="form-group">
-                        <label>Destination</label>
-                        <div class="input-wrapper">
-                            <input type="text" placeholder="Delhi" class="form-input" value="Delhi">
-                            <span class="airport-code">DEL</span>
-                            <div class="airport-name">India Gandhi International Airport</div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Traveller</label>
-                        <div class="input-wrapper">
-                            <input type="text" placeholder="1 Adult" class="form-input" value="1 Adult">
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Departure</label>
-                        <div class="input-wrapper">
-                            <input type="text" placeholder="15/07/2022" class="form-input" value="15/07/2022">
-                            <i class="fas fa-calendar"></i>
-                        </div>
-                    </div>
-                    <button class="search-button">Search</button>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="attractions-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Attractions</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="filter-section">
-                    <h2 class="filter-title">Type of Attraction</h2>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="all"></div>
-                            <span class="checkbox-label">All</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="historical"></div>
-                            <span class="checkbox-label">Historical Sites</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox checked" data-value="natural"></div>
-                            <span class="checkbox-label">Natural Wonders</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="museums"></div>
-                            <span class="checkbox-label">Museum&Galleries</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="amusement"></div>
-                            <span class="checkbox-label">Amusement Parks</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="shopping"></div>
-                            <span class="checkbox-label">Shopping District</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="spiritual"></div>
-                            <span class="checkbox-label">Spiritual Sites</span>
-                        </div>
-                        <div class="checkbox-item">
-                            <div class="custom-checkbox" data-value="hidden"></div>
-                            <span class="checkbox-label">Local Hidden Gems</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="divider"></div>
-                <div class="filter-section">
-                    <h2 class="filter-title">Price range</h2>
-                    <div class="price-range">
-                        <div class="range-values">
-                            <span class="range-value">$78</span>
-                            <span class="range-value">$143</span>
-                        </div>
-                        <div class="range-slider">
-                            <div class="range-line"></div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="local-services-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Local Services</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="services-list">
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-shopping-bag"></i>
-                            <span>Shops & Mall</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-heartbeat"></i>
-                            <span>Health & Medical</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-basketball-ball"></i>
-                            <span>Sports</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-spa"></i>
-                            <span>Beauty & Spas</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-home"></i>
-                            <span>Home Services</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-graduation-cap"></i>
-                            <span>Education</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-car"></i>
-                            <span>Auto & Cars</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-theater-masks"></i>
-                            <span>Arts & Entertainment</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-paw"></i>
-                            <span>Pets</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-tools"></i>
-                            <span>Fix & Repair</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-key"></i>
-                            <span>Rent & Lease</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-calendar-check"></i>
-                            <span>Event Planning & Services</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-piggy-bank"></i>
-                            <span>Financial Services</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="ticket-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Ticket</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="services-list">
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-plane"></i>
-                            <span>Flights</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-train"></i>
-                            <span>Trains</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-car"></i>
-                            <span>Car Rental</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-taxi"></i>
-                            <span>Taxi</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-bus"></i>
-                            <span>buses</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="#" class="service-item">
-                        <div class="service-info">
-                            <i class="fas fa-ship"></i>
-                            <span>Ferries & Cruises</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <template id="mytrip-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">My Trip</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="trip-list">
-                    <div class="trip-item">
-                        <div class="trip-tag">Tour</div>
-                        <div class="trip-image">
-                            <img src="images/travel.jpg" alt="New York City">
-                        </div>
-                        <div class="trip-details">
-                            <h3>New York City sightseeing tour</h3>
-                            <div class="trip-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>NYC,US</span>
-                            </div>
-                            <div class="trip-time">
-                                <i class="far fa-clock"></i>
-                                <span>Feb 14, 12Am</span>
-                            </div>
-                            <div class="trip-price">
-                                <span class="amount">$48.25</span>
-                                <span class="per-person">/ person</span>
+                <div class="col-md-4">
+                    <h5>Newsletter</h5>
+                    <p class="text-muted">Subscribe to our newsletter for travel updates and exclusive offers.</p>
+                    <form class="newsletter-form">
+                        <div class="input-group mb-3">
+                            <input type="email" class="form-control" placeholder="Your email" aria-label="Your email">
+                            <div class="input-group-append">
+                                <button class="btn btn-primary" type="button">Subscribe</button>
                             </div>
                         </div>
-                    </div>
-                    <div class="trip-item">
-                        <div class="trip-tag">Stays</div>
-                        <div class="trip-image">
-                            <img src="images/hotel.jfif" alt="Luxury Resort">
-                            <button class="btn-like active">
-                                <i class="fas fa-heart"></i>
-                            </button>
-                        </div>
-                        <div class="trip-details">
-                            <h3>Luxury Resort & Spa</h3>
-                            <div class="trip-location">
-                                <i class="fas fa-map-marker-alt"></i>
-                                <span>Bali, Indonesia</span>
-                            </div>
-                            <div class="trip-time">
-                                <i class="far fa-clock"></i>
-                                <span>Mar 20 - Mar 25</span>
-                            </div>
-                            <div class="trip-price">
-                                <span class="amount">$245</span>
-                                <span class="per-person">/ night</span>
-                            </div>
-                        </div>
-                    </div>
+                    </form>
+                </div>
+            </div>
+            <hr class="my-4 bg-secondary">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-left">
+                    <p class="mb-md-0">© 2023 Advenro. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-center text-md-right">
+                    <img src="img/payment-methods.png" alt="Payment Methods" class="payment-methods" height="30">
                 </div>
             </div>
         </div>
-    </template>
-
-    <template id="auth-drawer">
-        <div class="side-drawer">
-            <div class="drawer-header">
-                <button class="back-button">
-                    <i class="fas fa-chevron-left"></i>
-                </button>
-                <h1 class="mb-0" style="font-size: 16px; font-weight: 500;">Account</h1>
-            </div>
-            <div class="drawer-content">
-                <div class="auth-options">
-                    <a href="signin.html" class="auth-option">
-                        <div class="auth-option-info">
-                            <i class="fas fa-sign-in-alt"></i>
-                            <span>Sign In</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                    <a href="signup.html" class="auth-option">
-                        <div class="auth-option-info">
-                            <i class="fas fa-user-plus"></i>
-                            <span>Sign Up</span>
-                        </div>
-                        <i class="fas fa-chevron-right"></i>
-                    </a>
-                </div>
-            </div>
-        </div>
-    </template>
-
-    <style>
-        .side-drawer {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            z-index: 1000;
-            transform: translateX(-100%);
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .side-drawer.open {
-            transform: translateX(0);
-        }
-
-        .drawer-header {
-            padding: 16px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            gap: 16px;
-        }
-
-        .back-button {
-            border: none;
-            background: none;
-            padding: 8px;
-            color: #1A1A1A;
-        }
-
-        .drawer-content {
-            padding: 16px;
-        }
-
-        .filter-section {
-            margin-bottom: 24px;
-        }
-
-        .filter-title {
-            font-size: 14px;
-            font-weight: normal;
-            color: #666;
-            margin-bottom: 16px;
-        }
-
-        .drawer-header h1 {
-            font-size: 16px;
-            font-weight: 500;
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .checkbox-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .custom-checkbox {
-            width: 20px;
-            height: 20px;
-            border: 1px solid #666;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            background: white;
-        }
-
-        .custom-checkbox.checked {
-            background: #FF385C;
-            border-color: #FF385C;
-        }
-
-        .custom-checkbox.checked::after {
-            content: '✓';
-            color: white;
-            font-size: 14px;
-        }
-
-        .checkbox-label {
-            font-size: 14px;
-            color: #1A1A1A;
-            font-weight: normal;
-        }
-
-        .price-range {
-            margin-top: 8px;
-        }
-
-        .range-values {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-
-        .range-value {
-            font-size: 14px;
-            color: #1A1A1A;
-        }
-
-        .range-slider {
-            width: 100%;
-            height: 2px;
-            background: #E5E5E5;
-            position: relative;
-            margin: 24px 0;
-        }
-
-        .range-slider::before,
-        .range-slider::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            background: #FF385C;
-            border-radius: 50%;
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            cursor: pointer;
-        }
-
-        .range-slider::before {
-            left: 30%;
-        }
-
-        .range-slider::after {
-            right: 30%;
-        }
-
-        .range-line {
-            position: absolute;
-            height: 100%;
-            background: #FF385C;
-            left: 30%;
-            right: 30%;
-        }
-
-        .divider {
-            height: 1px;
-            background: rgba(0,0,0,0.1);
-            margin: 24px 0;
-        }
-
-        /* Hotels & Stays Form Styles */
-        .form-section {
-            padding: 16px;
-        }
-
-        .form-group {
-            margin-bottom: 24px;
-        }
-
-        .form-group label {
-            display: block;
-            font-size: 14px;
-            color: #666;
-            margin-bottom: 8px;
-        }
-
-        .input-wrapper {
-            position: relative;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #E5E5E5;
-            border-radius: 8px;
-            font-size: 16px;
-            color: #1A1A1A;
-        }
-
-        .airport-code {
-            position: absolute;
-            right: 12px;
-            top: 12px;
-            color: #666;
-            font-size: 14px;
-        }
-
-        .airport-name {
-            font-size: 12px;
-            color: #666;
-            margin-top: 4px;
-        }
-
-        .fa-calendar {
-            position: absolute;
-            right: 12px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #666;
-        }
-
-        .search-button {
-            width: 100%;
-            padding: 16px;
-            background: #FF385C;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            margin-top: 16px;
-        }
-
-        .search-button:hover {
-            background: #E6314F;
-        }
-
-        /* Local Services Styles */
-        .services-list {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .service-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            text-decoration: none;
-            color: #1A1A1A;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .service-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .service-info i {
-            font-size: 20px;
-            width: 24px;
-            color: #666;
-        }
-
-        .service-info span {
-            font-size: 14px;
-        }
-
-        .service-item .fa-chevron-right {
-            color: #666;
-            font-size: 12px;
-        }
-
-        /* My Trip Styles */
-        .trip-list {
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        .trip-item {
-            background: white;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            position: relative;
-        }
-
-        .trip-tag {
-            position: absolute;
-            top: 12px;
-            left: 12px;
-            background: white;
-            padding: 4px 12px;
-            border-radius: 100px;
-            font-size: 12px;
-            font-weight: 500;
-            z-index: 1;
-        }
-
-        .trip-image {
-            position: relative;
-            height: 200px;
-            overflow: hidden;
-        }
-
-        .trip-image img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .trip-details {
-            padding: 16px;
-        }
-
-        .trip-details h3 {
-            font-size: 16px;
-            font-weight: 500;
-            margin-bottom: 8px;
-            color: #1A1A1A;
-        }
-
-        .trip-location, .trip-time {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 4px;
-        }
-
-        .trip-price {
-            margin-top: 12px;
-        }
-
-        .trip-price .amount {
-            font-size: 16px;
-            font-weight: 500;
-            color: #1A1A1A;
-        }
-
-        .trip-price .per-person {
-            font-size: 14px;
-            color: #666;
-        }
-
-        .btn-like {
-            position: absolute;
-            top: 12px;
-            right: 12px;
-            background: white;
-            border: none;
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .btn-like.active {
-            color: #FF385C;
-        }
-
-        /* Add these styles to your existing styles */
-        .auth-required {
-            display: none;
-        }
-
-        .auth-not-required {
-            display: none;
-        }
-
-        .auth-button {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: #1A1A1A;
-            font-size: 12px;
-            padding: 8px 0;
-        }
-
-        .auth-button i {
-            font-size: 24px;
-            margin-bottom: 4px;
-            color: #FF385C;
-        }
-
-        .auth-button:hover {
-            color: #FF385C;
-        }
-
-        /* Auth Drawer Styles */
-        .auth-options {
-            display: flex;
-            flex-direction: column;
-        }
-
-        .auth-option {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            text-decoration: none;
-            color: #1A1A1A;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
-        }
-
-        .auth-option-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .auth-option-info i {
-            font-size: 20px;
-            width: 24px;
-            color: #FF385C;
-        }
-
-        .auth-option-info span {
-            font-size: 14px;
-        }
-
-        .auth-option .fa-chevron-right {
-            color: #666;
-            font-size: 12px;
-        }
-
-        /* Add these styles to your existing styles */
-        [data-auth="true"] .auth-required {
-            display: flex;
-        }
-
-        [data-auth="true"] .auth-not-required {
-            display: none;
-        }
-
-        [data-auth="false"] .auth-required {
-            display: none;
-        }
-
-        [data-auth="false"] .auth-not-required {
-            display: flex;
-        }
-
-        .nav-btn {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-decoration: none;
-            color: #1A1A1A;
-            font-size: 12px;
-            padding: 8px 0;
-        }
-
-        .nav-btn i {
-            font-size: 24px;
-            margin-bottom: 4px;
-        }
-
-        .nav-btn.active {
-            color: #FF385C;
-        }
-
-        .nav-btn:hover {
-            color: #FF385C;
-        }
-
-        .bottom-navbar {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: white;
-            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-            z-index: 1000;
-        }
-
-        .nav-buttons {
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 8px 0;
-        }
-    </style>
+    </footer>
+
+    <!-- jQuery, Bootstrap and other libraries -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Notification component -->
+    <script src="js/components/notifications.js"></script>
+    
+    <!-- App scripts -->
+    <script src="js/app.js"></script>
+    
+    <!-- Home page specific script -->
+    <script src="js/home.js"></script>
 </body>
 </html> 
